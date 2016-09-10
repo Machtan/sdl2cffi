@@ -2,6 +2,12 @@ import sys
 import os
 import re
 
+def clean_function(text):
+    if "SDL_PRINTF_FORMAT_STRING" in text:
+        return ""
+    else:
+        return text
+
 def clean_struct(text):
     return text.replace("SDLCALL", "")
 
@@ -49,15 +55,15 @@ def clean_enum(text):
     else:
         return text
 
-
+# NOTE: The order is important... I should fix that, tbh.
 pats = [
     #"define": "#define\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+(?:[0-9]+|(?:0x[0-9a-fA-F]+)|(?:[a-zA-Z_][a-zA-Z0-9_]*\s*\\|)|(?:[(]\s*\\\\))",
     ("include", r"#include\s*\"([^\"]+)\""),
     ("typedef", r"typedef\s+([a-zA-Z_][a-zA-Z0-9_]*)((?:\s|[*])+)([a-zA-Z_][a-zA-Z0-9_]*)"),
     ("callback", r"typedef\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+\(([^;]+);"),
     ("empty struct", r"typedef struct ([a-zA-Z_][a-zA-Z0-9_]*)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
-    ("struct", r"typedef struct\s*([a-zA-Z_][a-zA-Z0-9_]*)?\s*[{]((?:.|\n)+?)\n[}]\s*([a-zA-Z_][a-zA-Z0-9_]*)?\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
     ("enum", r"typedef enum\s+[{]((?:.|\n)+?)\n[}]\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
+    ("struct", r"typedef struct\s*([a-zA-Z_][a-zA-Z0-9_]*)?\s*[{]((?:.|\n)+?)\n[}]\s*([a-zA-Z_][a-zA-Z0-9_]*)?\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
     ("function", r"extern DECLSPEC\s+(.*?)\s+SDLCALL ([^;]*?);"),
 ]
 
@@ -74,33 +80,37 @@ debug = False
 def _process_text(text, output, ignore, include_handler=None, debug_name=None):
     
     filtered = [ (k, v) for k, v in patterns if k not in ignore ]
-    after_include = pats[1][0]
+    items = []
+    if debug_name is not None:
+        items.append((0, "\n// ========= {!r} =========\n".format(debug_name)))
+    
+    def add(start, text):
+        items.append(start, text)
     
     for pid, pattern in filtered:
-        if pid == after_include and debug_name is not None:
-            output.append("\n// ========= {!r} =========\n".format(debug_name))
+        
             
         for match in pattern.finditer(text):
             if pid == "define":
                 name = match.groups()[0]
                 if debug: print("define: {}".format(name))
-                output.append(_fmt_define.format(name))
+                items.append((match.start(), _fmt_define.format(name)))
                 
             elif pid == "typedef":
                 type_, pad, name = match.groups()
                 if type_ not in _invalid_typedef_names:
                     if debug: print("typedef: {} = {}".format(name, type_+pad))
-                    output.append(_fmt_typedef.format(type_+pad, name))
+                    items.append((match.start(), _fmt_typedef.format(type_+pad, name)))
             
             elif pid == "callback":
                 rettype, body = match.groups()
                 print("callback: {!r} ({}".format(rettype, body))
-                output.append(_fmt_callback.format(rettype, body.replace("SDLCALL", "")))
+                items.append((match.start(), _fmt_callback.format(rettype, body.replace("SDLCALL", ""))))
             
             elif pid == "empty struct":
                 body, name = match.groups()
                 if debug: print("empty struct: {}".format(name))
-                output.append(clean_struct(_fmt_empty_struct.format(body, name)))
+                items.append((match.start(), _fmt_empty_struct.format(body, name)))
             
             elif pid == "struct":
                 structname, body, extra, alias = match.groups()
@@ -108,24 +118,27 @@ def _process_text(text, output, ignore, include_handler=None, debug_name=None):
                 # The 'extra' argument is only used SDL_audio.h and to 
                 # ensure that the audio is packed correctly with GCC
                 # see 'SDL_audio.h:195'
-                output.append(_fmt_struct.format(structname, body, "", alias))
+                items.append((match.start(), clean_struct(_fmt_struct.format(structname, body, "", alias))))
             
             elif pid == "enum":
                 body, name = match.groups()
                 if debug: print("enum: {}".format(name))
-                output.append(clean_enum(_fmt_enum.format(body, name)))
+                items.append((match.start(), clean_enum(_fmt_enum.format(body, name))))
             
             elif pid == "function":
                 rettype, signature = match.groups()
                 if debug: print("function: {} -> {}".format(signature, rettype))
-                output.append(_fmt_function.format(rettype, signature))
+                items.append((match.start(), clean_function(_fmt_function.format(rettype, signature))))
             
             elif pid == "include":
                 name = match.groups()[0]
                 if debug: print("include: {!r}".format(name))
                 if include_handler is not None:
                     include_handler(name, output)
-
+    
+    items.sort()
+    for _, item in items:
+        output.append(item)
 
 def _process_file(path, output, ignore, include_handler=None):
     with open(path) as f:
