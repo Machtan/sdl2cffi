@@ -110,23 +110,13 @@ def save_enums(enums):
     
     return os.linesep.join(lines)
 
-def main():
-    """Entry point"""
-    text = run_preprocessor("/usr/local/include/SDL2/SDL.h")
-    #print(text)
-    #with open("cleaned.h") as f:
-    #    text = f.read()
+def clean_enums(text):
     enums = find_enums(text)
-    for enum in enums:
-        #print(enum)
-        pass
     
     ctext = generate_c_file("SDL2/SDL.h", enums)
-    #print(ctext)
     with open("enum_importer.c", "w") as f:
         f.write(ctext)
     
-    #if not os.path.exists("enum_importer"):
     subprocess.run(["cc", "-o", "enum_importer", "-lSDL2", "enum_importer.c"])
     res = subprocess.run(["./enum_importer"], stdout=subprocess.PIPE, universal_newlines=True)
     values = eval(res.stdout)
@@ -136,6 +126,13 @@ def main():
             enum.members[key] = values[key]
     
     enum_text = save_enums(enums)
+    return enum_text
+
+
+def main():
+    """Entry point"""
+    text = run_preprocessor("/usr/local/include/SDL2/SDL.h")
+    enum_text = clean_enums(text)
     with open("fixed_enums.h", "w") as f:
         f.write(enum_text)
     

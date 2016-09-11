@@ -145,7 +145,7 @@ def remove_functions(text, functions):
         replaced = False
         for function in functions:
             if line.startswith(function):
-                print("Replacing {!r}".format(function))
+                #print("Replacing {!r}".format(function))
                 i += 1
                 line = split[i]
                 while not line.endswith(");"):
