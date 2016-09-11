@@ -4,6 +4,7 @@ import subprocess
 from cffi import FFI
 from fix_header import clean_header
 from fix_enums import clean_enums
+from fix_defines import clean_defines
 
 def run_preprocessor(headerfile):
     res = subprocess.run(["cc", "-E", "-P", headerfile], 
@@ -40,9 +41,16 @@ def main(args=sys.argv[1:]):
     )
     
     source_text = run_preprocessor(header_path)
+    fixed_defines = clean_defines(header_path)
     fixed_enums = clean_enums(source_text, include_path)
     fixed_header = clean_header(source_text)
-    fixed_source = "{}{}{}".format(fixed_enums, os.linesep, fixed_header)
+    fixed_source = "{}{}{}{}{}".format(
+        fixed_defines,
+        os.linesep,
+        fixed_enums, 
+        os.linesep, 
+        fixed_header
+    )
     
     ffibuilder.cdef(fixed_source)
     
