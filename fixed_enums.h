@@ -1,4 +1,11 @@
 typedef enum {
+   P_ALL = 0, 
+   P_PID = 1, 
+   P_PGID = 2, 
+} idtype_t;
+
+
+typedef enum {
    SDL_FALSE = 0, 
    SDL_TRUE = 1, 
 } SDL_bool;

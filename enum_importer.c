@@ -2,6 +2,9 @@
 
 int main(int argc, char** argv) {    
     printf("{\n");
+    printf("    \"P_ALL\": %d,\n", P_ALL);
+    printf("    \"P_PID\": %d,\n", P_PID);
+    printf("    \"P_PGID\": %d,\n", P_PGID);
     printf("    \"SDL_FALSE\": %d,\n", SDL_FALSE);
     printf("    \"SDL_TRUE\": %d,\n", SDL_TRUE);
     printf("    \"DUMMY_ENUM_VALUE\": %d,\n", DUMMY_ENUM_VALUE);

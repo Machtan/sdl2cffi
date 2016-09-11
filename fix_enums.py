@@ -10,15 +10,15 @@ RE_ENUM = re.compile(r"enum\s+[{]([^}]*?)[}]\s*;")
 class Enum:
     def __init__(self, body, typedef=None):
         if typedef:
-            print("TYPEDEF ENUM: {}".format(typedef))
+            pass#print("TYPEDEF ENUM: {}".format(typedef))
         else:
-            print("ENUM:")
+            pass#print("ENUM:")
         self.typedef = typedef
         items = [part.replace("\n", "") for part in body.split(",\n")]
         members = OrderedDict()
         for line in items:
             if "=" in line:
-                print(line)
+                #print(line)
                 key, value = line.split("=", 1)
                 members[key.strip()] = value.strip()
             else:
@@ -112,16 +112,17 @@ def save_enums(enums):
 
 def main():
     """Entry point"""
-    #text = run_preprocessor("include/SDL.h")
+    text = run_preprocessor("/usr/local/include/SDL2/SDL.h")
     #print(text)
-    with open("cleaned.h") as f:
-        text = f.read()
+    #with open("cleaned.h") as f:
+    #    text = f.read()
     enums = find_enums(text)
     for enum in enums:
-        print(enum)
+        #print(enum)
+        pass
     
     ctext = generate_c_file("SDL2/SDL.h", enums)
-    print(ctext)
+    #print(ctext)
     with open("enum_importer.c", "w") as f:
         f.write(ctext)
     
@@ -129,7 +130,7 @@ def main():
     subprocess.run(["cc", "-o", "enum_importer", "-lSDL2", "enum_importer.c"])
     res = subprocess.run(["./enum_importer"], stdout=subprocess.PIPE, universal_newlines=True)
     values = eval(res.stdout)
-    print(len(values))
+    #print(len(values))
     for enum in enums:
         for key in enum.members.keys():
             enum.members[key] = values[key]

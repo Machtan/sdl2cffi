@@ -7,15 +7,6 @@ typedef int32_t Sint32;
 typedef uint32_t Uint32;
 typedef int64_t Sint64;
 typedef uint64_t Uint64;
-typedef int SDL_dummy_uint8[(sizeof(Uint8) == 1) * 2 - 1];
-typedef int SDL_dummy_sint8[(sizeof(Sint8) == 1) * 2 - 1];
-typedef int SDL_dummy_uint16[(sizeof(Uint16) == 2) * 2 - 1];
-typedef int SDL_dummy_sint16[(sizeof(Sint16) == 2) * 2 - 1];
-typedef int SDL_dummy_uint32[(sizeof(Uint32) == 4) * 2 - 1];
-typedef int SDL_dummy_sint32[(sizeof(Sint32) == 4) * 2 - 1];
-typedef int SDL_dummy_uint64[(sizeof(Uint64) == 8) * 2 - 1];
-typedef int SDL_dummy_sint64[(sizeof(Sint64) == 8) * 2 - 1];
-typedef int SDL_dummy_enum[(sizeof(SDL_DUMMY_ENUM) == sizeof(int)) * 2 - 1];
 void * SDL_malloc(size_t size);
 void * SDL_calloc(size_t nmemb, size_t size);
 void * SDL_realloc(void *mem, size_t size);
@@ -89,7 +80,10 @@ int SDL_iconv_close(SDL_iconv_t cd);
 size_t SDL_iconv(SDL_iconv_t cd, const char **inbuf,
                                          size_t * inbytesleft, char **outbuf,
                                          size_t * outbytesleft);
-extern int SDL_main(int argc, char *argv[]);
+char * SDL_iconv_string(const char *tocode,
+                                               const char *fromcode,
+                                               const char *inbuf,
+                                               size_t inbytesleft);
 void SDL_SetMainReady(void);
 typedef struct SDL_AssertData
 {
@@ -104,7 +98,6 @@ typedef struct SDL_AssertData
 SDL_AssertState SDL_ReportAssertion(SDL_AssertData *,
                                                              const char *,
                                                              const char *, int)
-   __attribute__((analyzer_noreturn))
 ;
 typedef SDL_AssertState ( *SDL_AssertionHandler)(
                                  const SDL_AssertData* data, void* userdata);
@@ -127,7 +120,7 @@ int SDL_AtomicAdd(SDL_atomic_t *a, int v);
 SDL_bool SDL_AtomicCASPtr(void **a, void *oldval, void *newval);
 void* SDL_AtomicSetPtr(void **a, void* v);
 void* SDL_AtomicGetPtr(void **a);
-int SDL_SetError( const char *fmt, ...) __attribute__ (( format( __printf__, 1, 1 +1 )));
+int SDL_SetError( const char *fmt, ...);
 const char * SDL_GetError(void);
 void SDL_ClearError(void);
 int SDL_Error(SDL_errorcode code);
@@ -1237,6 +1230,24 @@ void * SDL_LoadObject(const char *sofile);
 void * SDL_LoadFunction(void *handle,
                                                const char *name);
 void SDL_UnloadObject(void *handle);
+void SDL_LogSetAllPriority(SDL_LogPriority priority);
+void SDL_LogSetPriority(int category,
+                                                SDL_LogPriority priority);
+SDL_LogPriority SDL_LogGetPriority(int category);
+void SDL_LogResetPriorities(void);
+void SDL_Log( const char *fmt, ...);
+void SDL_LogVerbose(int category, const char *fmt, ...);
+void SDL_LogDebug(int category, const char *fmt, ...);
+void SDL_LogInfo(int category, const char *fmt, ...);
+void SDL_LogWarn(int category, const char *fmt, ...);
+void SDL_LogError(int category, const char *fmt, ...);
+void SDL_LogCritical(int category, const char *fmt, ...);
+void SDL_LogMessage(int category,
+                                            SDL_LogPriority priority,
+                                                                     const char *fmt, ...);
+typedef void (*SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
+void SDL_LogGetOutputFunction(SDL_LogOutputFunction *callback, void **userdata);
+void SDL_LogSetOutputFunction(SDL_LogOutputFunction callback, void *userdata);
 typedef struct
 {
     Uint32 flags;
