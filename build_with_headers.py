@@ -1,10 +1,11 @@
 from cffi import FFI
 import sys
+import os
 
 def main():
     """Entry point"""
     if len(sys.argv) < 2:
-        return print("Usage: python3 build_with_header.py <header.h>")
+        return print("Usage: python3 build_with_headers.py <header.h> [<header.h>, ...]")
     
     ffibuilder = FFI()
 
@@ -17,10 +18,16 @@ def main():
         ]
     )
     
-    with open(sys.argv[1]) as f:
-        text = f.read()
+    cdefs = []
     
-    ffibuilder.cdef(text)
+    for header in sys.argv[1:]:
+        with open(header) as f:
+            text = f.read()
+            cdefs.append(text)
+    
+    header_source = os.linesep.join(cdefs)
+    
+    ffibuilder.cdef(header_source)
     
     ffibuilder.compile(verbose=True)
 
