@@ -110,10 +110,10 @@ def save_enums(enums):
     
     return os.linesep.join(lines)
 
-def clean_enums(text):
+def clean_enums(text, include_path):
     enums = find_enums(text)
     
-    ctext = generate_c_file("SDL2/SDL.h", enums)
+    ctext = generate_c_file(include_path, enums)
     with open("enum_importer.c", "w") as f:
         f.write(ctext)
     
@@ -132,7 +132,7 @@ def clean_enums(text):
 def main():
     """Entry point"""
     text = run_preprocessor("/usr/local/include/SDL2/SDL.h")
-    enum_text = clean_enums(text)
+    enum_text = clean_enums(text, "SDL2/SDL.h")
     with open("fixed_enums.h", "w") as f:
         f.write(enum_text)
     

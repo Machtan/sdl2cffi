@@ -1,4 +1,4 @@
-#include "SDL2/SDL.h"
+#include "../../../Users/jakob/code/python/sdl2cffi/include/SDL.h"
 
 int main(int argc, char** argv) {    
     printf("{\n");
