@@ -31,35 +31,6 @@ simple = """
 """
 #ffibuilder.cdef(simple)
 
-forwards = """
-// ========== forward of SDL_GameControllerBindType ======
-typedef enum
-{
-    SDL_CONTROLLER_BINDTYPE_NONE = 0,
-    SDL_CONTROLLER_BINDTYPE_BUTTON,
-    SDL_CONTROLLER_BINDTYPE_AXIS,
-    SDL_CONTROLLER_BINDTYPE_HAT
-} SDL_GameControllerBindType;
-
-// ========== forward of SDL_HitTestResult ==============
-typedef enum
-{
-    SDL_HITTEST_NORMAL,  /**< Region is normal. No special properties. */
-    SDL_HITTEST_DRAGGABLE,  /**< Region can drag entire window. */
-    SDL_HITTEST_RESIZE_TOPLEFT,
-    SDL_HITTEST_RESIZE_TOP,
-    SDL_HITTEST_RESIZE_TOPRIGHT,
-    SDL_HITTEST_RESIZE_RIGHT,
-    SDL_HITTEST_RESIZE_BOTTOMRIGHT,
-    SDL_HITTEST_RESIZE_BOTTOM,
-    SDL_HITTEST_RESIZE_BOTTOMLEFT,
-    SDL_HITTEST_RESIZE_LEFT
-} SDL_HitTestResult;
-
-// ========== forward of SDL_Window ===========
-typedef struct SDL_Window SDL_Window;
-"""
-
 rwops = """
 // ========== stdinch.h for RWOPS =============
 typedef int8_t  Sint8;

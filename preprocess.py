@@ -11,32 +11,65 @@ def clean_function(text):
 def clean_struct(text):
     return text.replace("SDLCALL", "")
 
+def parse_enum(text):
+    split = text.splitlines()
+    lines = [line for line in split if not line.startswith(("{", "}", "typedef", "enum"))]
+    items = "\n".join(lines).replace("\n", "").split(",")
+    order = []
+    values = {}
+    for line in items:
+        print(line)
+        if not "=" in line:
+            name = line.strip()
+            values[name] = None
+            order.append(name)
+        else:
+            name, val = line.split("=", 1)
+            values[name.strip()] = val.strip()
+            order.append(name.strip())
+    
+    for name, value in values.items():
+        if value is not None and "|" in value:
+            for oname, ovalue in values.items():
+                if oname in value:
+                    value = value.replace(oname, ovalue)
+            value = eval(value)
+            values[name] = value
+    
+    return values
+
 _bad_pat = r"\n\s*(SDL_[a-zA-Z0-9_]*)\s*=\s*\("
 bad_pat = re.compile(_bad_pat)
 def clean_enum(text):
     match = bad_pat.search(text)
     if match:
-        print("found bad enum pat in enum: {}".format(text.splitlines()[-1].split(" ")[1][:-1]))
-        bad = match.groups()[0]
+        print("found bad enum pat in enum: {}".format(text.splitlines()[-1].split(" ")[-1][:-1]))
+        print(text)
+        
         split = text.splitlines()
-        lines = [line for line in split if not line.startswith(("{", "}", "typedef"))]
+        lines = [line for line in split if not line.startswith(("{", "}", "typedef", "enum"))]
+        items = "\n".join(lines).replace("\n", "").split(",")
         order = []
         values = {}
-        for line in lines:
-            expr = line.split(",")[0]
+        for line in items:
             print(line)
-            name, val = expr.split("=", 1)
-            values[name.strip()] = val.strip()
-            order.append(name.strip())
+            if not "=" in line:
+                name = line.strip()
+                values[name] = None
+                order.append(name)
+            else:
+                name, val = line.split("=", 1)
+                values[name.strip()] = val.strip()
+                order.append(name.strip())
         
-        badval = values[bad]
         for name, value in values.items():
-            if name in badval:
-                badval = badval.replace(name, value)
+            if value is not None and "|" in value:
+                for oname, ovalue in values.items():
+                    if oname in value:
+                        value = value.replace(oname, ovalue)
+                value = eval(value)
+                values[name] = value
         
-        print("Bad:")
-        print(badval)
-        values[bad] = eval(badval)
         
         parts = [split[0], split[1]]
         for i, key in enumerate(order):
@@ -44,7 +77,11 @@ def clean_enum(text):
                 comma = ","
             else:
                 comma = ""
-            text = "    {} = {}{}".format(key, values[key], comma)
+            value = values[key]
+            if value == None:
+                text = "    {}{}".format(key, comma)
+            else:
+                text = "    {} = {}{}".format(key, values[key], comma)
             parts.append(text)
         parts.append(split[-1])
         t = os.linesep.join(parts)
@@ -59,24 +96,27 @@ def clean_enum(text):
 pats = [
     #"define": "#define\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+(?:[0-9]+|(?:0x[0-9a-fA-F]+)|(?:[a-zA-Z_][a-zA-Z0-9_]*\s*\\|)|(?:[(]\s*\\\\))",
     ("include", r"#include\s*\"([^\"]+)\""),
-    ("typedef", r"typedef\s+([a-zA-Z_][a-zA-Z0-9_]*)((?:\s|[*])+)([a-zA-Z_][a-zA-Z0-9_]*)"),
+    ("typedef", r"typedef\s+([a-zA-Z_][a-zA-Z0-9_]*)((?:\s|[*])+)([a-zA-Z_][a-zA-Z0-9_]*)[^\{]*?;"),
     ("callback", r"typedef\s+([a-zA-Z_][a-zA-Z0-9_]*)\s+\(([^;]+);"),
     ("empty struct", r"typedef struct ([a-zA-Z_][a-zA-Z0-9_]*)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
-    ("enum", r"typedef enum\s+[{]((?:.|\n)+?)\n[}]\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
+    ("typedef enum", r"typedef enum\s+[{]((?:.|\n)+?)\n[}]\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
+    ("enum", r"enum\s+[{]((?:.|\n)+?)\n[}]\s*;"),
     ("struct", r"typedef struct\s*([a-zA-Z_][a-zA-Z0-9_]*)?\s*[{]((?:.|\n)+?)\n[}]\s*([a-zA-Z_][a-zA-Z0-9_]*)?\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*;"),
     ("function", r"extern DECLSPEC\s+(.*?)\s+SDLCALL ([^;]*?);"),
 ]
 
-patterns = [ (k, re.compile(pat)) for k, pat in pats ] 
+patterns = [ (k, re.compile(pat)) for k, pat in pats ]
+named_patterns = { k: r for k, r in patterns }
 _fmt_typedef = "typedef {} {};"
 _fmt_callback = "typedef {} ({};"
 _fmt_define = "#define {} ..."
 _fmt_empty_struct = "typedef struct {} {};"
 _fmt_struct = "typedef struct {}\n{{{}\n}} {} {};"
-_fmt_enum = "typedef enum\n{{{}\n}} {};"
+_fmt_typedef_enum = "typedef enum\n{{{}\n}} {};"
+_fmt_enum = "enum\n{{{}\n}};"
 _fmt_function = "{} {};"
 _invalid_typedef_names = {"struct", "enum"}
-debug = False
+debug = True
 def _process_text(text, output, ignore, include_handler=None, debug_name=None):
     
     filtered = [ (k, v) for k, v in patterns if k not in ignore ]
@@ -120,10 +160,15 @@ def _process_text(text, output, ignore, include_handler=None, debug_name=None):
                 # see 'SDL_audio.h:195'
                 items.append((match.start(), clean_struct(_fmt_struct.format(structname, body, "", alias))))
             
-            elif pid == "enum":
+            elif pid == "typedef enum":
                 body, name = match.groups()
                 if debug: print("enum: {}".format(name))
-                items.append((match.start(), clean_enum(_fmt_enum.format(body, name))))
+                items.append((match.start(), clean_enum(_fmt_typedef_enum.format(body, name))))
+            
+            elif pid == "enum":
+                body = match.groups()[0]
+                if debug: print("unnamed enum:")
+                items.append((match.start(), clean_enum(_fmt_enum.format(body))))
             
             elif pid == "function":
                 rettype, signature = match.groups()
@@ -139,6 +184,37 @@ def _process_text(text, output, ignore, include_handler=None, debug_name=None):
     items.sort()
     for _, item in items:
         output.append(item)
+
+
+def fix_enums(text):
+    parts = []
+    start = 0
+    for match in named_patterns["enum"].finditer(text):
+        parts.append(text[start:match.start()])
+        enum = match.group(0)
+        
+        values = parse_enum(enum)
+        print("=========== VALUES ==============")
+        import pprint
+        pprint.pprint(values)
+        
+        parts.append(clean_enum(enum))
+        start = match.end()
+    
+    parts.append(text[start:])
+    text = "".join(parts)
+    
+    parts.clear()
+    start = 0
+    for match in named_patterns["typedef enum"].finditer(text):
+        parts.append(text[start:match.start()])
+        enum = match.group(0)
+        parts.append(clean_enum(enum))
+        start = match.end()
+    
+    parts.append(text[start:])
+    return "".join(parts)
+    
 
 def _process_file(path, output, ignore, include_handler=None):
     with open(path) as f:
@@ -184,17 +260,37 @@ def process_file(path, ignore_map=None, excluded=None, recursive=False):
     
     return os.linesep.join(output)
 
+def output(text, outfile=None, silent=False):
+    if outfile:
+        with open(outfile, "w") as f:
+            f.write(text)
+    else:
+        if not silent:
+            print(text)
 
 def main():
     """Entry point"""
-    if len(sys.argv) < 2:
-        return print("Usage: python3 preprocess.py <file.h>")
+    import argparse
     
+    parser = argparse.ArgumentParser()
     
-    output = process_file(sys.argv[1], recursive=True)
+    parser.add_argument("header")
+    parser.add_argument("--output", "-o")
+    parser.add_argument("--fix-enums", "-f", action="store_true", default=False)
+    parser.add_argument("--silent", "-s", action="store_true", default=False)
     
-    print("\n//=========== OUTPUT ============\n")
-    print(output)
+    args = parser.parse_args(sys.argv[1:])
+    if args.fix_enums:
+        with open(args.header) as f:
+            text = f.read()
+        fixed = fix_enums(text)
+        output(fixed, outfile=args.output, silent=args.silent)
+    else:
+        cleaned = process_file(args.header, recursive=True)
     
+        output("\n//=========== OUTPUT ============\n", outfile=args.output)
+        output(cleaned, outfile=args.output, silent=args.silent)
+
+
 if __name__ == '__main__':
     main()
