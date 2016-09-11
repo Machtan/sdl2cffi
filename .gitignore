@@ -3,3 +3,8 @@ __pycache__
 _sdl2.*
 include
 generated.h
+enum_importer.c
+enum_importer
+fixed_enums.h
+fixed_header.h
+prep.h
