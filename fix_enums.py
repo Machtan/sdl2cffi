@@ -25,6 +25,26 @@ class Enum:
                 members[line.strip()] = None
         self.members = members
     
+    def format_c(self):
+        lines = []
+        if self.typedef:
+            lines.append("typedef enum {")
+        else:
+            lines.append("enum {")
+        
+        for key, value in self.members.items():
+            if value is None:
+                lines.append("   {},".format(key))
+            else:
+                lines.append("   {} = {}, ".format(key, value))
+            
+        if self.typedef:
+            lines.append("}} {};".format(self.typedef))
+        else:
+            lines.append("};")
+        
+        return os.linesep.join(lines)
+    
     def __str__(self):
         if self.typedef:
             return "typedef enum {} {{ ...{} }}".format(self.typedef, len(self.members))
@@ -82,6 +102,14 @@ int main(int argc, char** argv) {{\
     lines.append("}")
     return os.linesep.join(lines)
 
+def save_enums(enums):
+    lines = []
+    for enum in enums:
+        lines.append(enum.format_c())
+        lines.append(os.linesep)
+    
+    return os.linesep.join(lines)
+
 def main():
     """Entry point"""
     #text = run_preprocessor("include/SDL.h")
@@ -102,6 +130,13 @@ def main():
     res = subprocess.run(["./enum_importer"], stdout=subprocess.PIPE, universal_newlines=True)
     values = eval(res.stdout)
     print(len(values))
+    for enum in enums:
+        for key in enum.members.keys():
+            enum.members[key] = values[key]
+    
+    enum_text = save_enums(enums)
+    with open("fixed_enums.h", "w") as f:
+        f.write(enum_text)
     
 if __name__ == '__main__':
     main()
