@@ -2,12 +2,7 @@
 __pycache__
 _sdl2.*
 include
-generated.h
-enum_importer.c
-enum_importer
-define_importer.c
-define_importer
-fixed_enums.h
-fixed_header.h
-fixed_defines.h
-prep.h
+setup/*.h
+setup/*.c
+setup/enum_importer
+setup/define_importer
