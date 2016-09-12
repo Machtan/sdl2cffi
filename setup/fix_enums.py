@@ -14,12 +14,17 @@ class Enum:
         else:
             pass#print("ENUM:")
         self.typedef = typedef
-        items = [part.replace("\n", "") for part in body.split(",\n")]
+        items = []
+        for line in body.split(","):
+            if not line.isspace():
+                items.append(line.replace("\n", ""))
+            #print(line)
         members = OrderedDict()
         for line in items:
             if "=" in line:
                 #print(line)
                 key, value = line.split("=", 1)
+                #print("{!r} = {!r}".format(key, value))
                 members[key.strip()] = value.strip()
             else:
                 members[line.strip()] = None
@@ -44,6 +49,9 @@ class Enum:
             lines.append("};")
         
         return os.linesep.join(lines)
+    
+    def __repr__(self):
+        return str(self)
     
     def __str__(self):
         if self.typedef:

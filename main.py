@@ -30,7 +30,8 @@ def main():
                 if type(event) == Quit:
                     loop = False
                 else:
-                    print(event)
+                    pass
+                    #print(event)
             
             time.sleep(0.1)
         
