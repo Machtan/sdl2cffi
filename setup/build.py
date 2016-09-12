@@ -30,8 +30,9 @@ def main(args=sys.argv[1:]):
     include_path = os.path.relpath(header_path, start="/usr/local/include")
     
     ffibuilder = FFI()
-
-    ffibuilder.set_source("_sdl2",
+    
+    MODULE_NAME = "_sdl2"
+    ffibuilder.set_source(MODULE_NAME,
         """
         #include "SDL2/SDL.h"
         """,
@@ -54,7 +55,12 @@ def main(args=sys.argv[1:]):
     
     ffibuilder.cdef(fixed_source)
     
-    ffibuilder.compile(verbose=True)
+    libfile = ffibuilder.compile(verbose=True)
+    print("Res: {}".format(res))
+    artifacts = [MODULE_NAME + ".c", MODULE_NAME+".o"]
+    for artifact in artifacts:
+        if os.path.exists(artifact):
+            os.remove(artifact)
 
 if __name__ == '__main__':
     main()

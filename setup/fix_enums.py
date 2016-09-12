@@ -114,11 +114,14 @@ def clean_enums(text, include_path):
     enums = find_enums(text)
     
     ctext = generate_c_file(include_path, enums)
-    with open("enum_importer.c", "w") as f:
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    cpath = os.path.join(dirname, "enum_importer.c")
+    with open(cpath, "w") as f:
         f.write(ctext)
     
-    subprocess.run(["cc", "-o", "enum_importer", "-lSDL2", "enum_importer.c"])
-    res = subprocess.run(["./enum_importer"], stdout=subprocess.PIPE, universal_newlines=True)
+    exepath = os.path.join(dirname, "enum_importer")
+    subprocess.run(["cc", "-o", exepath, "-lSDL2", cpath])
+    res = subprocess.run([exepath], stdout=subprocess.PIPE, universal_newlines=True)
     values = eval(res.stdout)
     #print(len(values))
     for enum in enums:
