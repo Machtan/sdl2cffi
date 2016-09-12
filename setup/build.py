@@ -27,7 +27,7 @@ def main(args=sys.argv[1:]):
         print("Header file not found: {!r}".format(args[0]))
         sys.exit(1)
     
-    include_path = os.path.relpath(header_path, start="/usr/local/include")
+    INCLUDE_PATH = "SDL2/SDL.h"
     
     ffibuilder = FFI()
     
@@ -43,7 +43,7 @@ def main(args=sys.argv[1:]):
     
     source_text = run_preprocessor(header_path)
     fixed_defines = clean_defines(header_path)
-    fixed_enums = clean_enums(source_text, include_path)
+    fixed_enums = clean_enums(source_text, INCLUDE_PATH)
     fixed_header = clean_header(source_text)
     fixed_source = "{}{}{}{}{}".format(
         fixed_defines,
@@ -56,7 +56,6 @@ def main(args=sys.argv[1:]):
     ffibuilder.cdef(fixed_source)
     
     libfile = ffibuilder.compile(verbose=True)
-    print("Res: {}".format(res))
     artifacts = [MODULE_NAME + ".c", MODULE_NAME+".o"]
     for artifact in artifacts:
         if os.path.exists(artifact):

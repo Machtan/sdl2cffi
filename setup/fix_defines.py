@@ -19,6 +19,10 @@ IGNORED = set([
     "SDL_SCANF_FORMAT_STRING",
     "SDL_PRIX64",
 ])
+PRUNED_VALID_DEFINES = [
+    "SDL_WINDOWPOS_CENTERED",
+    "SDL_WINDOWPOS_UNDEFINED",
+]
 def find_defines(text, defines=None):
     if defines is None:
         defines = set()
@@ -41,7 +45,8 @@ def find_defines(text, defines=None):
             #print("Found: {}".format(define))
             #print("  "+line)
             defines.add(define)
-            
+    
+    defines.update(PRUNED_VALID_DEFINES)        
     return defines
 
 def find_includes(headerfile):
