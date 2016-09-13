@@ -1,18 +1,14 @@
 from _sdl2 import ffi, lib
+from render import RendererBuilder
+from common import SDLAllocated, assert_non_null
 
-class Window():
+class Window(SDLAllocated(lib.SDL_DestroyWindow)):
     def __init__(self, raw):
-        self._raw = raw
-        self.__destroyed = False
+        self._raw = raw    
     
-    def destroy(self):
-        if not self.__destroyed:
-            print("Window freed!")
-            lib.SDL_DestroyWindow(self._raw)
-            self.__destroyed = True
-    
-    def __del__(self):
-        self.destroy()
+    def build_renderer(self):
+        """Starts building a renderer, rendering to this window."""
+        return RendererBuilder(self)
 
 class WindowBuilder():
     def __init__(self):
@@ -51,6 +47,9 @@ class WindowBuilder():
         return self
     
     def build(self):
-        raw = lib.SDL_CreateWindow(bytes(self._title, encoding="utf8"), self._x, 
-            self._y, self._width, self._height, self._flags)
+        """Finishes building the window"""
+        raw = assert_non_null(lib.SDL_CreateWindow(
+            bytes(self._title, encoding="utf8"), self._x, 
+            self._y, self._width, self._height, self._flags
+        ))
         return Window(raw)

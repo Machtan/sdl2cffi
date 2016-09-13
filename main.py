@@ -3,6 +3,7 @@ import time
 import sdl2
 from events import get_events, Quit
 from window import WindowBuilder
+from rect import Rect
 
 def test():
     from _sdl2 import ffi, lib
@@ -24,7 +25,10 @@ def main():
     with sdl2.init_everything():
         print("RUN GAME!")
         window = WindowBuilder().title("Test Game").build()
+        renderer = window.build_renderer().build()
+        renderer.set_clear_color(255, 255, 255)
         loop = True
+        rect = Rect(100, 100, 300, 300)
         while loop:
             for event in get_events():
                 if type(event) == Quit:
@@ -33,6 +37,9 @@ def main():
                     pass
                     #print(event)
             
+            renderer.clear()
+            renderer.c_fill_rect((255, 0, 0), rect)
+            renderer.present()
             time.sleep(0.1)
         
 

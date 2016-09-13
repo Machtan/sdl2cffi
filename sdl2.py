@@ -1,4 +1,5 @@
 from _sdl2 import ffi, lib
+from common import assert_zero
 
 class SdlContext:
     """A context to run an SDL game in.
@@ -8,7 +9,7 @@ class SdlContext:
         
     def __enter__(self):
         print("SDL Init")
-        lib.SDL_Init(self.flags)
+        assert_zero(lib.SDL_Init(self.flags))
     
     def __exit__(self, *args):
         print("SDL Quit")
