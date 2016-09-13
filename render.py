@@ -1,6 +1,10 @@
 from _sdl2 import lib, ffi
 from common import SDLAllocated, assert_non_null, assert_zero
 
+class Texture(SDLAllocated(lib.SDL_DestroyTexture)):
+    def __init__(self, raw):
+        self._raw = raw
+
 class Renderer(SDLAllocated(lib.SDL_DestroyRenderer)):
     def __init__(self, raw):
         self._raw = raw
@@ -18,6 +22,21 @@ class Renderer(SDLAllocated(lib.SDL_DestroyRenderer)):
         else:
             self.set_draw_color(*self.clear_color)
         assert_zero(lib.SDL_RenderClear(self._raw))
+    
+    def load_texture(self, filepath):
+        """Loads the image in the given file as a texture"""
+        rawpath = bytes(filepath, encoding="utf8")
+        raw = assert_non_null(lib.IMG_LoadTexture(self._raw, rawpath))
+        return Texture(raw)
+    
+    def copy(self, texture, src_rect=None, dst_rect=None):
+        """Renders the source part of the texture at destination.
+        If no source area is given, the whole texture is used.
+        If no destination is given, the texture is stretched and the whole area
+        is filled"""
+        src = src_rect._raw if src_rect is not None else ffi.NULL
+        dst = dst_rect._raw if dst_rect is not None else ffi.NULL
+        assert_zero(lib.SDL_RenderCopy(self._raw, texture._raw, src, dst))
     
     def c_fill_rect(self, color, rect):
         self.set_draw_color(*color)

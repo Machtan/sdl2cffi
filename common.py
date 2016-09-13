@@ -20,7 +20,7 @@ def get_error():
 
 class SDLError(Exception):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **gwargs)
+        super().__init__(*args, **kwargs)
 
 def assert_zero(result):
     if result != 0:

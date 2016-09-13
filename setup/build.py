@@ -6,6 +6,8 @@ from fix_header import clean_header
 from fix_enums import clean_enums
 from fix_defines import clean_defines
 
+LOCAL = os.path.dirname(os.path.abspath(__file__))
+
 def run_preprocessor(headerfile):
     res = subprocess.run(["cc", "-E", "-P", headerfile], 
         stdout=subprocess.PIPE, universal_newlines=True)
@@ -35,9 +37,11 @@ def main(args=sys.argv[1:]):
     ffibuilder.set_source(MODULE_NAME,
         """
         #include "SDL2/SDL.h"
+        #include "SDL2/SDL_image.h"
         """,
         libraries = [
-            "SDL2"
+            "SDL2",
+            "SDL2_image",
         ]
     )
     
@@ -45,6 +49,10 @@ def main(args=sys.argv[1:]):
     fixed_defines = clean_defines(header_path)
     fixed_enums = clean_enums(source_text, INCLUDE_PATH)
     fixed_header = clean_header(source_text)
+    with open(os.path.join(LOCAL, "manual_image_header.h")) as f:
+        image_header = f.read()
+        fixed_header = fixed_header + os.linesep + image_header
+    
     fixed_source = "{}{}{}{}{}".format(
         fixed_defines,
         os.linesep,

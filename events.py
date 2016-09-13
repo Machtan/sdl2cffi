@@ -166,12 +166,16 @@ class ControllerDeviceRemapped:
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class Multigesture:
+class MultiGesture:
     def __init__(self, union):
-        print('==== Multigesture ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
+        self.dDist = union.dDist
+        self.dTheta = union.dTheta
+        self.numFingers = union.numFingers
+        self.padding = union.padding
+        self.timestamp = union.timestamp
+        self.touchId = union.touchId
+        self.x = union.x
+        self.y = union.y
 
 class Controllerbuttonup:
     def __init__(self, union):
@@ -355,7 +359,7 @@ def _wrap_event(union):
     elif union.type == lib.SDL_CONTROLLERDEVICEREMAPPED:
         return ControllerDeviceRemapped(union.cdevice)
     elif union.type == lib.SDL_MULTIGESTURE:
-        return Multigesture(union.mgesture)
+        return MultiGesture(union.mgesture)
     elif union.type == lib.SDL_CONTROLLERBUTTONUP:
         return Controllerbuttonup(union.cbutton)
     elif union.type == lib.SDL_APP_DIDENTERBACKGROUND:

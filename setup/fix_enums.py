@@ -21,6 +21,8 @@ class Enum:
             #print(line)
         members = OrderedDict()
         for line in items:
+            if line == "'": # Handle SDLK_COMMA = ',',
+                continue
             if "=" in line:
                 #print(line)
                 key, value = line.split("=", 1)

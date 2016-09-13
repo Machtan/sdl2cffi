@@ -26,9 +26,11 @@ def main():
         print("RUN GAME!")
         window = WindowBuilder().title("Test Game").build()
         renderer = window.build_renderer().build()
+        sloth = renderer.load_texture("Sloth.png")
+        sloth_rect = Rect(300, 100, 128, 128)
         renderer.set_clear_color(255, 255, 255)
         loop = True
-        rect = Rect(100, 100, 300, 300)
+        rect = Rect(100, 100, 100, 100)
         while loop:
             for event in get_events():
                 if type(event) == Quit:
@@ -39,6 +41,7 @@ def main():
             
             renderer.clear()
             renderer.c_fill_rect((255, 0, 0), rect)
+            renderer.copy(sloth, dst_rect=sloth_rect)
             renderer.present()
             time.sleep(0.1)
         
