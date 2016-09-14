@@ -1,8 +1,8 @@
-from _sdl2 import lib, ffi
-from common import SDLAllocated, assert_zero, assert_non_null
-from surface import Surface
+from ._sdl2 import lib, ffi
+from .common import Allocated, assert_zero, assert_non_null
+from .surface import Surface
 
-class Font(SDLAllocated(lib.TTF_CloseFont)):
+class Font(Allocated(lib.TTF_CloseFont)):
     def load(path, point_size):
         rawpath = bytes(path, encoding="utf8")
         raw = assert_non_null(lib.TTF_OpenFont(rawpath, point_size))

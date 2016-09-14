@@ -1,7 +1,7 @@
-from _sdl2 import lib, ffi
-from common import SDLAllocated, assert_non_null, assert_zero
+from ._sdl2 import lib, ffi
+from .common import Allocated, assert_non_null, assert_zero
 
-class Texture(SDLAllocated(lib.SDL_DestroyTexture)):
+class Texture(Allocated(lib.SDL_DestroyTexture)):
     def __init__(self, raw):
         super().__init__()
         self._raw = raw
@@ -11,7 +11,7 @@ class Texture(SDLAllocated(lib.SDL_DestroyTexture)):
         self.width = wptr[0]
         self.height = hptr[0]
 
-class Renderer(SDLAllocated(lib.SDL_DestroyRenderer)):
+class Renderer(Allocated(lib.SDL_DestroyRenderer)):
     def __init__(self, raw):
         super().__init__()
         self._raw = raw

@@ -31,6 +31,9 @@ def load_enums():
 def print_enums():
     for k in load_enums():
         print(k)
+    
+def print_member_list(enum_name):
+    print(load_enums().get(enum_name))
 
 def longest_name(iterable):
     maxlen = 0
@@ -132,7 +135,7 @@ def generate_union_wrappers(func_name, type_member, const_prefix, member_map):
     
 
 def main():
-    generate_union_wrappers("_wrap_event", "type", "SDL_", EVENT_MEMBER_MAP)
+    pass#generate_union_wrappers("_wrap_event", "type", "SDL_", EVENT_MEMBER_MAP)
 
 if __name__ == '__main__':
     main()

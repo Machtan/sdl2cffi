@@ -1,4 +1,4 @@
-from _sdl2 import lib, ffi
+from ._sdl2 import lib, ffi
 
 class Rect:
     def __init__(self, x, y, w, h):

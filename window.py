@@ -1,8 +1,8 @@
-from _sdl2 import ffi, lib
-from render import RendererBuilder
-from common import SDLAllocated, assert_non_null
+from ._sdl2 import ffi, lib
+from .render import RendererBuilder
+from .common import Allocated, assert_non_null
 
-class Window(SDLAllocated(lib.SDL_DestroyWindow)):
+class Window(Allocated(lib.SDL_DestroyWindow)):
     def __init__(self, raw):
         super().__init__()
         self._raw = raw    

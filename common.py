@@ -1,9 +1,9 @@
-from _sdl2 import lib, ffi
+from ._sdl2 import lib, ffi
 
 sdl_allocated_objects = []
 
-def SDLAllocated(free_function):
-    class SDLAllocated:
+def Allocated(free_function):
+    class Allocated:
         __destroyed = False
         def __init__(self):
             sdl_allocated_objects.append(self)
@@ -17,7 +17,7 @@ def SDLAllocated(free_function):
         def __del__(self):
             self.destroy()
     
-    return SDLAllocated
+    return Allocated
 
 def get_error():
     return str(ffi.string(lib.SDL_GetError()), encoding="utf8")

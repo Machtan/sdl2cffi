@@ -1,7 +1,7 @@
-from _sdl2 import ffi, lib
-from common import assert_zero, sdl_allocated_objects
+from ._sdl2 import ffi, lib
+from .common import assert_zero, sdl_allocated_objects
 
-class SdlContext:
+class Context:
     """A context to run an SDL game in.
     Handles initialization and deinitialization"""
     def __init__(self, flags, image_flags):
@@ -15,19 +15,20 @@ class SdlContext:
         assert_zero(lib.TTF_Init())
     
     def __exit__(self, *args):
-        print("SDL Quit")
+        print("Deinitializing...")
         for obj in sdl_allocated_objects:
             obj.destroy()
         lib.TTF_Quit()
         lib.IMG_Quit()
         lib.SDL_Quit()
+        print("SDL Quit")
 
 def init_everything():
     """Initializes SDL with all its subsystems.
     Returns a context to run an SDL game in."""
     #lib.SDL_Init(lib.SDL_INIT_EVERYTHING)
     image_flags = lib.IMG_INIT_JPG | lib.IMG_INIT_PNG | lib.IMG_INIT_TIF | lib.IMG_INIT_WEBP
-    return SdlContext(lib.SDL_INIT_EVERYTHING, image_flags)
+    return Context(lib.SDL_INIT_EVERYTHING, image_flags)
 
 def init(events=False, video=False, audio=False, game_controller=False,
         haptic=False, joystick=False, timer=False):
@@ -41,4 +42,4 @@ def init(events=False, video=False, audio=False, game_controller=False,
     if haptic:          flags |= lib.SDL_INIT_HAPTIC
     if joystick:        flags |= lib.SDL_INIT_JOYSTICK
     if timer:           flags |= lib.SDL_INIT_TIMER
-    return SdlContext(flags, 0)
+    return Context(flags, 0)

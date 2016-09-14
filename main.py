@@ -1,13 +1,10 @@
 import time
 
-import sdl2
-from events import get_events, Quit
-from window import WindowBuilder
-from rect import Rect
-from font import Font
+from sdl2cffi import init_everything, get_events, WindowBuilder, Rect, Font
+from sdl2cffi.events import Quit
 
 def test():
-    from _sdl2 import ffi, lib
+    from ._sdl2 import ffi, lib
     
     print("Init everything: {}".format(lib.SDL_INIT_EVERYTHING))
 
@@ -23,7 +20,7 @@ def test():
 
 def main():
     """Entry point"""
-    with sdl2.init_everything():
+    with init_everything():
         print("RUN GAME!")
         window = WindowBuilder().title("Test Game").build()
         renderer = window.build_renderer().build()
