@@ -3,10 +3,17 @@ from common import SDLAllocated, assert_non_null, assert_zero
 
 class Texture(SDLAllocated(lib.SDL_DestroyTexture)):
     def __init__(self, raw):
+        super().__init__()
         self._raw = raw
+        wptr = ffi.new("int *")
+        hptr = ffi.new("int *")
+        assert_zero(lib.SDL_QueryTexture(raw, ffi.NULL, ffi.NULL, wptr, hptr))
+        self.width = wptr[0]
+        self.height = hptr[0]
 
 class Renderer(SDLAllocated(lib.SDL_DestroyRenderer)):
     def __init__(self, raw):
+        super().__init__()
         self._raw = raw
         self.clear_color = (0, 0, 0, 255)
     
@@ -27,6 +34,10 @@ class Renderer(SDLAllocated(lib.SDL_DestroyRenderer)):
         """Loads the image in the given file as a texture"""
         rawpath = bytes(filepath, encoding="utf8")
         raw = assert_non_null(lib.IMG_LoadTexture(self._raw, rawpath))
+        return Texture(raw)
+    
+    def create_texture_from_surface(self, surface):
+        raw = assert_non_null(lib.SDL_CreateTextureFromSurface(self._raw, surface._raw))
         return Texture(raw)
     
     def copy(self, texture, src_rect=None, dst_rect=None):

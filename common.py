@@ -1,8 +1,12 @@
 from _sdl2 import lib, ffi
 
+sdl_allocated_objects = []
+
 def SDLAllocated(free_function):
     class SDLAllocated:
         __destroyed = False
+        def __init__(self):
+            sdl_allocated_objects.append(self)
         
         def destroy(self):
             if not self.__destroyed:

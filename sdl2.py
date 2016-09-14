@@ -1,5 +1,5 @@
 from _sdl2 import ffi, lib
-from common import assert_zero
+from common import assert_zero, sdl_allocated_objects
 
 class SdlContext:
     """A context to run an SDL game in.
@@ -12,9 +12,13 @@ class SdlContext:
         print("SDL Init")
         assert_zero(lib.SDL_Init(self.flags))
         lib.IMG_Init(self.image_flags)
+        assert_zero(lib.TTF_Init())
     
     def __exit__(self, *args):
         print("SDL Quit")
+        for obj in sdl_allocated_objects:
+            obj.destroy()
+        lib.TTF_Quit()
         lib.IMG_Quit()
         lib.SDL_Quit()
 

@@ -4,6 +4,7 @@ from common import SDLAllocated, assert_non_null
 
 class Window(SDLAllocated(lib.SDL_DestroyWindow)):
     def __init__(self, raw):
+        super().__init__()
         self._raw = raw    
     
     def build_renderer(self):

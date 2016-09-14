@@ -4,6 +4,7 @@ import sdl2
 from events import get_events, Quit
 from window import WindowBuilder
 from rect import Rect
+from font import Font
 
 def test():
     from _sdl2 import ffi, lib
@@ -29,8 +30,14 @@ def main():
         sloth = renderer.load_texture("Sloth.png")
         sloth_rect = Rect(300, 100, 128, 128)
         renderer.set_clear_color(255, 255, 255)
-        loop = True
         rect = Rect(100, 100, 100, 100)
+        
+        font = Font.load("/Library/Fonts/Copperplate.ttc", 32)
+        surf = font.render_blended("Hello, world!", (0, 255, 0))
+        tex = renderer.create_texture_from_surface(surf)
+        tex_rect = Rect(100, 300, tex.width, tex.height)
+        
+        loop = True
         while loop:
             for event in get_events():
                 if type(event) == Quit:
@@ -42,9 +49,9 @@ def main():
             renderer.clear()
             renderer.c_fill_rect((255, 0, 0), rect)
             renderer.copy(sloth, dst_rect=sloth_rect)
+            renderer.copy(tex, dst_rect=tex_rect)
             renderer.present()
-            time.sleep(0.1)
-        
+            time.sleep(0.1)        
 
 if __name__ == '__main__':
     main()

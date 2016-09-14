@@ -93,10 +93,15 @@ class SysWMEvent:
 
 class MouseButtonUp:
     def __init__(self, union):
-        print('==== MouseButtonUp ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
+        self.button = union.button
+        self.clicks = union.clicks
+        self.padding1 = union.padding1
+        self.state = union.state
+        self.timestamp = union.timestamp
+        self.which = union.which
+        self.windowID = union.windowID
+        self.x = union.x
+        self.y = union.y
 
 class ControllerButtonDown:
     def __init__(self, union):
@@ -234,12 +239,17 @@ class KeyUp:
 class RenderDeviceReset:
     pass
 
-class Mousebuttondown:
+class MouseButtonDown:
     def __init__(self, union):
-        print('==== Mousebuttondown ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
+        self.button = union.button
+        self.clicks = union.clicks
+        self.padding1 = union.padding1
+        self.state = union.state
+        self.timestamp = union.timestamp
+        self.which = union.which
+        self.windowID = union.windowID
+        self.x = union.x
+        self.y = union.y
 
 class RenderTargetsReset:
     pass
@@ -379,7 +389,7 @@ def _wrap_event(union):
     elif union.type == lib.SDL_RENDER_DEVICE_RESET:
         return RenderDeviceReset()
     elif union.type == lib.SDL_MOUSEBUTTONDOWN:
-        return Mousebuttondown(union.button)
+        return MouseButtonDown(union.button)
     elif union.type == lib.SDL_RENDER_TARGETS_RESET:
         return RenderTargetsReset()
     elif union.type == lib.SDL_JOYBUTTONDOWN:
