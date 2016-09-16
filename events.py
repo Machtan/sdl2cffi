@@ -1,4 +1,6 @@
 from ._sdl2 import ffi, lib
+from keyboard import KeyMod
+import sys as _sys
 
 # ============ Notification events =================
 
@@ -133,12 +135,36 @@ class MouseWheel:
 class KeyDown:
     def __init__(self, union):
         self.scancode = union.keysym.scancode
-        self.key = union.keysym.sym
-        self.mod = union.keysym.mod
+        self.keycode = union.keysym.sym
+        self.modifier_flags = union.keysym.mod
         self.repeat = union.repeat
         self.state = union.state
         self.timestamp = union.timestamp
         self.windowID = union.windowID
+    
+    def shortcut(self):
+        if _sys.platform() == "darwin":
+            return self.cmd()
+        else:
+            return self.ctrl()
+    
+    def ctrl(self):
+        return (self.modifier_flags & (KeyMod.RCtrl | KeyMod.LCtrl)) != 0
+    
+    def gui(self):
+        return (self.modifier_flags & (KeyMod.RGui | KeyMod.LGui)) != 0
+    
+    def shift(self):
+        return (self.modifier_flags & (KeyMod.RShift | KeyMod.LShift)) != 0
+    
+    def alt(self):
+        return (self.modifier_flags & (KeyMod.RAlt | KeyMod.LAlt)) != 0
+    
+    def cmd(self):
+        return self.gui()
+    
+    def windows(self):
+        return self.gui()
 
 class KeyUp(KeyDown):
     pass

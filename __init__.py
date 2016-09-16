@@ -7,6 +7,7 @@ from .rect import Rect
 from .font import Font
 
 from . import events
+from . import keyboard
 
 # Is this the right way?
 del _sdl2
