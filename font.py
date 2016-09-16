@@ -1,11 +1,11 @@
 from ._sdl2 import lib, ffi
-from .common import Allocated, assert_zero, assert_non_null
+from .common import Allocated, assert_zero, assert_nonnull
 from .surface import Surface
 
 class Font(Allocated(lib.TTF_CloseFont)):
     def load(path, point_size):
         rawpath = bytes(path, encoding="utf8")
-        raw = assert_non_null(lib.TTF_OpenFont(rawpath, point_size))
+        raw = assert_nonnull(lib.TTF_OpenFont(rawpath, point_size))
         return Font(raw)
     
     def __init__(self, raw):
@@ -18,7 +18,7 @@ class Font(Allocated(lib.TTF_CloseFont)):
     def render_blended(self, text, color):
         raw_color = ffi.new("SDL_Color*", color)
         raw_text = bytes(text, encoding="utf8")
-        raw = assert_non_null(lib.TTF_RenderUTF8_Blended(self._raw, raw_text, raw_color[0]))
+        raw = assert_nonnull(lib.TTF_RenderUTF8_Blended(self._raw, raw_text, raw_color[0]))
         return Surface(raw)
     
     def size_of(self, text):

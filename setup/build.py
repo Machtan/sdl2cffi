@@ -39,11 +39,13 @@ def main(args=sys.argv[1:]):
         #include "SDL2/SDL.h"
         #include "SDL2/SDL_image.h"
         #include "SDL2/SDL_ttf.h"
+        #include "SDL2/SDL_mixer.h"
         """,
         libraries = [
             "SDL2",
             "SDL2_image",
             "SDL2_ttf",
+            "SDL2_mixer",
         ]
     )
     
@@ -57,6 +59,9 @@ def main(args=sys.argv[1:]):
     with open(os.path.join(LOCAL, "manual_ttf_header.h")) as f:
         ttf_header = f.read()
         fixed_header = fixed_header + os.linesep + ttf_header
+    with open(os.path.join(LOCAL, "manual_mixer_header.h")) as f:
+        mixer_header = f.read()
+        fixed_header = fixed_header + os.linesep + mixer_header
     
     fixed_source = "{}{}{}{}{}".format(
         fixed_defines,

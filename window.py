@@ -1,6 +1,6 @@
 from ._sdl2 import ffi, lib
 from .render import RendererBuilder
-from .common import Allocated, assert_non_null
+from .common import Allocated, assert_nonnull
 
 class Window(Allocated(lib.SDL_DestroyWindow)):
     def __init__(self, raw):
@@ -49,7 +49,7 @@ class WindowBuilder():
     
     def build(self):
         """Finishes building the window"""
-        raw = assert_non_null(lib.SDL_CreateWindow(
+        raw = assert_nonnull(lib.SDL_CreateWindow(
             bytes(self._title, encoding="utf8"), self._x, 
             self._y, self._width, self._height, self._flags
         ))

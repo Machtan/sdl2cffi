@@ -1,5 +1,5 @@
 from ._sdl2 import lib, ffi
-from .common import Allocated, assert_non_null, assert_zero
+from .common import Allocated, assert_nonnull, assert_zero
 
 class Texture(Allocated(lib.SDL_DestroyTexture)):
     def __init__(self, raw):
@@ -33,11 +33,11 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
     def load_texture(self, filepath):
         """Loads the image in the given file as a texture"""
         rawpath = bytes(filepath, encoding="utf8")
-        raw = assert_non_null(lib.IMG_LoadTexture(self._raw, rawpath))
+        raw = assert_nonnull(lib.IMG_LoadTexture(self._raw, rawpath))
         return Texture(raw)
     
     def create_texture_from_surface(self, surface):
-        raw = assert_non_null(lib.SDL_CreateTextureFromSurface(self._raw, surface._raw))
+        raw = assert_nonnull(lib.SDL_CreateTextureFromSurface(self._raw, surface._raw))
         return Texture(raw)
     
     def copy(self, texture, src_rect=None, dst_rect=None):
@@ -66,5 +66,5 @@ class RendererBuilder:
         self._flags = 0
     
     def build(self):
-        raw = assert_non_null(lib.SDL_CreateRenderer(self._window._raw, self._index, self._flags))
+        raw = assert_nonnull(lib.SDL_CreateRenderer(self._window._raw, self._index, self._flags))
         return Renderer(raw)
