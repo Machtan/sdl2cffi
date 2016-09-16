@@ -1,5 +1,91 @@
 from ._sdl2 import ffi, lib
 
+# ============ Notification events =================
+
+class AppWillEnterForeground:
+    pass
+
+class AppDidEnterForeground:
+    pass
+
+class AppWillEnterBackground:
+    pass
+
+class AppDidEnterBackground:
+    pass
+
+class AppLowMemory:
+    pass
+    
+class AppTerminating:
+    pass
+
+class KeymapChanged:
+    pass
+
+class ClipboardUpdate:
+    pass
+
+class RenderDeviceReset:
+    pass
+
+class RenderTargetsReset:
+    pass
+
+class AudioDeviceAdded:
+    def __init__(self, union):
+        self.iscapture = union.iscapture
+        self.timestamp = union.timestamp
+        self.which = union.which
+
+class AudioDeviceRemoved:
+    def __init__(self, union):
+        print('==== AudioDeviceRemoved ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
+
+class Quit:
+    def __init__(self, union):
+        self.timestamp = union.timestamp
+
+class UserEvent:
+    def __init__(self, union):
+        print('==== UserEvent ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
+
+# ================= Window events ==================
+
+class DropFile:
+    def __init__(self, union):
+        self.file = union.file
+        self.timestamp = union.timestamp
+
+class SysWMEvent:
+    def __init__(self, union):
+        print('==== SysWMEvent ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
+
+class WindowEvent:
+    def __init__(self, union):
+        self.data1 = union.data1
+        self.data2 = union.data2
+        self.event = union.event
+        self.timestamp = union.timestamp
+        self.windowID = union.windowID
+
+# ================== Text events ====================
+
+class TextInput:
+    def __init__(self, union):
+        self.text = union.text
+        self.timestamp = union.timestamp
+        self.windowID = union.windowID  
+
 class TextEditing:
     def __init__(self, union):
         self.length = union.length
@@ -7,6 +93,22 @@ class TextEditing:
         self.text = union.text
         self.timestamp = union.timestamp
         self.windowID = union.windowID
+
+# ================== Mouse events ====================
+
+class MouseButtonDown:
+    def __init__(self, union):
+        self.button = union.button
+        self.clicks = union.clicks
+        self.timestamp = union.timestamp
+        self.state = union.state
+        self.which = union.which
+        self.windowID = union.windowID
+        self.x = union.x
+        self.y = union.y
+
+class MouseButtonUp(MouseButtonDown):
+    pass
 
 class MouseMotion:
     def __init__(self, union):
@@ -19,21 +121,42 @@ class MouseMotion:
         self.y = union.y
         self.yrel = union.yrel
 
-class UserEvent:
+class MouseWheel:
     def __init__(self, union):
-        print('==== UserEvent ====')
+        print('==== MouseWheel ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class ControllerDeviceAdded:
-    def __init__(self, union):
-        print('==== ControllerDeviceAdded ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
+# ================= Keyboard events ===================
 
-class KeymapChanged:
+class KeyDown:
+    def __init__(self, union):
+        self.scancode = union.keysym.scancode
+        self.key = union.keysym.sym
+        self.mod = union.keysym.mod
+        self.repeat = union.repeat
+        self.state = union.state
+        self.timestamp = union.timestamp
+        self.windowID = union.windowID
+
+class KeyUp(KeyDown):
+    pass
+
+# ================== Touch events =====================
+
+class FingerDown:
+    def __init__(self, union):
+        self.dx = union.dx
+        self.dy = union.dy
+        self.fingerId = union.fingerId
+        self.pressure = union.pressure
+        self.timestamp = union.timestamp
+        self.touchId = union.touchId
+        self.x = union.x
+        self.y = union.y
+
+class FingerUp(FingerDown):
     pass
 
 class FingerMotion:
@@ -54,98 +177,45 @@ class DollarRecord:
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class Joydeviceadded:
+class DollarGesture:
     def __init__(self, union):
-        print('==== Joydeviceadded ====')
+        print('==== DollarGesture ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class ClipboardUpdate:
-    pass
-
-class KeyDown:
+class MultiGesture:
     def __init__(self, union):
-        self.keysym = union.keysym
-        self.padding2 = union.padding2
-        self.padding3 = union.padding3
-        self.repeat = union.repeat
-        self.state = union.state
+        self.dDist = union.dDist
+        self.dTheta = union.dTheta
+        self.numFingers = union.numFingers
         self.timestamp = union.timestamp
-        self.windowID = union.windowID
-
-class Firstevent:
-    def __init__(self, union):
-        print('==== Firstevent ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class AppTerminating:
-    pass
-
-class SysWMEvent:
-    def __init__(self, union):
-        print('==== SysWMEvent ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class MouseButtonUp:
-    def __init__(self, union):
-        self.button = union.button
-        self.clicks = union.clicks
-        self.padding1 = union.padding1
-        self.state = union.state
-        self.timestamp = union.timestamp
-        self.which = union.which
-        self.windowID = union.windowID
+        self.touchId = union.touchId
         self.x = union.x
         self.y = union.y
 
-class ControllerButtonDown:
+# ================== Joystick events =======================
+
+class JoyDeviceAdded:
     def __init__(self, union):
-        print('==== ControllerButtonDown ====')
+        print('==== JoyDeviceAdded ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class AppDidEnterForeground:
-    pass
-
-class WindowEvent:
+class JoyDeviceRemoved:
     def __init__(self, union):
-        self.data1 = union.data1
-        self.data2 = union.data2
-        self.event = union.event
-        self.padding1 = union.padding1
-        self.padding2 = union.padding2
-        self.padding3 = union.padding3
-        self.timestamp = union.timestamp
-        self.windowID = union.windowID
-
-class AudioDeviceAdded:
-    def __init__(self, union):
-        self.iscapture = union.iscapture
-        self.padding1 = union.padding1
-        self.padding2 = union.padding2
-        self.padding3 = union.padding3
-        self.timestamp = union.timestamp
-        self.which = union.which
-
-class Quit:
-    def __init__(self, union):
-        self.timestamp = union.timestamp
-
-class ControllerDeviceRemoved:
-    def __init__(self, union):
-        print('==== ControllerDeviceRemoved ====')
+        print('==== JoyDeviceRemoved ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class AppWillEnterBackground:
-    pass
+class JoyButtonDown:
+    def __init__(self, union):
+        print('==== JoyButtonDown ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
 
 class JoyButtonUp:
     def __init__(self, union):
@@ -161,8 +231,28 @@ class JoyBallMotion:
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class AppWillEnterForeground:
-    pass
+class JoyHatMotion:
+    def __init__(self, union):
+        print('==== JoyHatMotion ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
+
+class JoyAxisMotion:
+    def __init__(self, union):
+        print('==== JoyAxisMotion ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
+
+# ================== Controller events =====================
+
+class ControllerDeviceAdded:
+    def __init__(self, union):
+        print('==== ControllerDeviceAdded ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
 
 class ControllerDeviceRemapped:
     def __init__(self, union):
@@ -170,150 +260,49 @@ class ControllerDeviceRemapped:
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
-
-class MultiGesture:
+        
+class ControllerDeviceRemoved:
     def __init__(self, union):
-        self.dDist = union.dDist
-        self.dTheta = union.dTheta
-        self.numFingers = union.numFingers
-        self.padding = union.padding
-        self.timestamp = union.timestamp
-        self.touchId = union.touchId
-        self.x = union.x
-        self.y = union.y
-
-class Controllerbuttonup:
-    def __init__(self, union):
-        print('==== Controllerbuttonup ====')
+        print('==== ControllerDeviceRemoved ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class AppDidenterbackground:
-    pass
-
-class MouseWheel:
+class ControllerButtonDown:
     def __init__(self, union):
-        print('==== MouseWheel ====')
+        print('==== ControllerButtonDown ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class Joydeviceremoved:
+class ControllerButtonUp:
     def __init__(self, union):
-        print('==== Joydeviceremoved ====')
+        print('==== ControllerButtonUp ====')
         for member in dir(union):
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class FingerUp:
+class ControllerAxisMotion:
     def __init__(self, union):
-        self.dx = union.dx
-        self.dy = union.dy
-        self.fingerId = union.fingerId
-        self.pressure = union.pressure
-        self.timestamp = union.timestamp
-        self.touchId = union.touchId
-        self.x = union.x
-        self.y = union.y
+        print('==== ControllerAxisMotion ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
+
+# =================== Unused events =========================
+
+class Firstevent:
+    def __init__(self, union):
+        print('==== Firstevent ====')
+        for member in dir(union):
+            if member == 'type': continue
+            print('self.{} = union.{}'.format(member, member))
 
 class Lastevent:
     pass
 
-class TextInput:
-    def __init__(self, union):
-        self.text = union.text
-        self.timestamp = union.timestamp
-        self.windowID = union.windowID
 
-class KeyUp:
-    def __init__(self, union):
-        self.keysym = union.keysym
-        self.padding2 = union.padding2
-        self.padding3 = union.padding3
-        self.repeat = union.repeat
-        self.state = union.state
-        self.timestamp = union.timestamp
-        self.windowID = union.windowID        
-
-class RenderDeviceReset:
-    pass
-
-class MouseButtonDown:
-    def __init__(self, union):
-        self.button = union.button
-        self.clicks = union.clicks
-        self.padding1 = union.padding1
-        self.state = union.state
-        self.timestamp = union.timestamp
-        self.which = union.which
-        self.windowID = union.windowID
-        self.x = union.x
-        self.y = union.y
-
-class RenderTargetsReset:
-    pass
-
-class Joybuttondown:
-    def __init__(self, union):
-        print('==== Joybuttondown ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class Joyaxismotion:
-    def __init__(self, union):
-        print('==== Joyaxismotion ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class Dollargesture:
-    def __init__(self, union):
-        print('==== Dollargesture ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class FingerDown:
-    def __init__(self, union):
-        self.dx = union.dx
-        self.dy = union.dy
-        self.fingerId = union.fingerId
-        self.pressure = union.pressure
-        self.timestamp = union.timestamp
-        self.touchId = union.touchId
-        self.x = union.x
-        self.y = union.y
-
-class AppLowmemory:
-    pass
-
-class Audiodeviceremoved:
-    def __init__(self, union):
-        print('==== Audiodeviceremoved ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class Controlleraxismotion:
-    def __init__(self, union):
-        print('==== Controlleraxismotion ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class Joyhatmotion:
-    def __init__(self, union):
-        print('==== Joyhatmotion ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
-
-class DropFile:
-    def __init__(self, union):
-        self.file = union.file
-        self.timestamp = union.timestamp
+# ================== Functions ==============================
 
 def _wrap_event(union):
     if union.type == lib.SDL_TEXTEDITING:
@@ -331,7 +320,7 @@ def _wrap_event(union):
     elif union.type == lib.SDL_DOLLARRECORD:
         return DollarRecord(union.dgesture)
     elif union.type == lib.SDL_JOYDEVICEADDED:
-        return Joydeviceadded(union.jdevice)
+        return JoyDeviceAdded(union.jdevice)
     elif union.type == lib.SDL_CLIPBOARDUPDATE:
         return ClipboardUpdate()
     elif union.type == lib.SDL_KEYDOWN:
@@ -369,13 +358,13 @@ def _wrap_event(union):
     elif union.type == lib.SDL_MULTIGESTURE:
         return MultiGesture(union.mgesture)
     elif union.type == lib.SDL_CONTROLLERBUTTONUP:
-        return Controllerbuttonup(union.cbutton)
+        return ControllerButtonUp(union.cbutton)
     elif union.type == lib.SDL_APP_DIDENTERBACKGROUND:
-        return AppDidenterbackground()
+        return AppDidEnterBackground()
     elif union.type == lib.SDL_MOUSEWHEEL:
         return MouseWheel(union.wheel)
     elif union.type == lib.SDL_JOYDEVICEREMOVED:
-        return Joydeviceremoved(union.jdevice)
+        return JoyDeviceRemoved(union.jdevice)
     elif union.type == lib.SDL_FINGERUP:
         return FingerUp(union.tfinger)
     elif union.type == lib.SDL_LASTEVENT:
@@ -391,21 +380,21 @@ def _wrap_event(union):
     elif union.type == lib.SDL_RENDER_TARGETS_RESET:
         return RenderTargetsReset()
     elif union.type == lib.SDL_JOYBUTTONDOWN:
-        return Joybuttondown(union.jbutton)
+        return JoyButtonDown(union.jbutton)
     elif union.type == lib.SDL_JOYAXISMOTION:
-        return Joyaxismotion(union.jaxis)
+        return JoyAxisMotion(union.jaxis)
     elif union.type == lib.SDL_DOLLARGESTURE:
-        return Dollargesture(union.dgesture)
+        return DollarGesture(union.dgesture)
     elif union.type == lib.SDL_FINGERDOWN:
         return FingerDown(union.tfinger)
     elif union.type == lib.SDL_APP_LOWMEMORY:
-        return AppLowmemory()
+        return AppLowMemory()
     elif union.type == lib.SDL_AUDIODEVICEREMOVED:
-        return Audiodeviceremoved(union.adevice)
+        return AudioDeviceRemoved(union.adevice)
     elif union.type == lib.SDL_CONTROLLERAXISMOTION:
-        return Controlleraxismotion(union.caxis)
+        return ControllerAxisMotion(union.caxis)
     elif union.type == lib.SDL_JOYHATMOTION:
-        return Joyhatmotion(union.jhat)
+        return JoyHatMotion(union.jhat)
     elif union.type == lib.SDL_DROPFILE:
         return DropFile(union.drop)
     else:
