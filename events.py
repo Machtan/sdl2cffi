@@ -61,8 +61,10 @@ class UserEvent:
 # ================= Window events ==================
 
 class DropFile:
+    """A file or folder was dropped on the window or icon of the application"""
     def __init__(self, union):
-        self.file = union.file
+        self.file = str(ffi.string(union.file), encoding="utf8")
+        lib.SDL_free(union.file)
         self.timestamp = union.timestamp
 
 class SysWMEvent:
@@ -83,16 +85,18 @@ class WindowEvent:
 # ================== Text events ====================
 
 class TextInput:
+    """Unicode text was entered on the keyboard"""
     def __init__(self, union):
-        self.text = union.text
+        self.text = str(ffi.string(union.text), encoding="utf8")
         self.timestamp = union.timestamp
         self.windowID = union.windowID  
 
 class TextEditing:
+    """The input method started combining a piece of text"""
     def __init__(self, union):
         self.length = union.length
         self.start = union.start
-        self.text = union.text
+        self.text = str(ffi.string(union.text), encoding="utf8")
         self.timestamp = union.timestamp
         self.windowID = union.windowID
 
@@ -133,6 +137,7 @@ class MouseWheel:
 # ================= Keyboard events ===================
 
 class KeyDown:
+    """A key on the keyboard was pressed"""
     def __init__(self, union):
         self.scancode = union.keysym.scancode
         self.keycode = union.keysym.sym
@@ -143,30 +148,38 @@ class KeyDown:
         self.windowID = union.windowID
     
     def shortcut(self):
+        """Returns whether the common shortcut modifier for the platform was held"""
         if _sys.platform() == "darwin":
             return self.cmd()
         else:
             return self.ctrl()
     
     def ctrl(self):
+        """Returns whether a Control button was held"""
         return (self.modifier_flags & (KeyMod.RCtrl | KeyMod.LCtrl)) != 0
     
     def gui(self):
+        """Returns whether the 'Gui' button was held (Windows/Cmd)"""
         return (self.modifier_flags & (KeyMod.RGui | KeyMod.LGui)) != 0
     
     def shift(self):
+        """Returns whether a Shift button was held"""
         return (self.modifier_flags & (KeyMod.RShift | KeyMod.LShift)) != 0
     
     def alt(self):
+        """Returns whether an Alt button was held"""
         return (self.modifier_flags & (KeyMod.RAlt | KeyMod.LAlt)) != 0
     
     def cmd(self):
+        """Returns whether a Cmd button was held"""
         return self.gui()
     
     def windows(self):
+        """Returns whether a Windows button was held"""
         return self.gui()
 
 class KeyUp(KeyDown):
+    """A key on the keyboard was released"""
     pass
 
 # ================== Touch events =====================
