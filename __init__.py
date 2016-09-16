@@ -6,6 +6,8 @@ from .surface import Surface
 from .rect import Rect
 from .font import Font
 
+from . import events
+
 # Is this the right way?
 del _sdl2
 del common
