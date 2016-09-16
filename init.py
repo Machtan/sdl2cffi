@@ -1,5 +1,9 @@
 from ._sdl2 import ffi, lib
 from .common import assert_zero, assert_nonzero, _sdl_allocated_objects
+from .events import _poll_event, Quit
+import sys as _sys
+
+class SafeQuit(Exception): pass
 
 class Context:
     """A context to run an SDL game in.
@@ -8,6 +12,7 @@ class Context:
         self.flags = flags
         self.image_flags = image_flags
         self.mixer_flags = mixer_flags
+        self._quit_handler = lambda: False
         
     def __enter__(self):
         print("SDL Init")
@@ -15,16 +20,32 @@ class Context:
         assert_nonzero(lib.IMG_Init(self.image_flags))
         assert_nonzero(lib.Mix_Init(self.mixer_flags))
         assert_zero(lib.TTF_Init())
+        return self
+
+    def get_events(self):
+        event = _poll_event()
+        while event != None:
+            if type(event) == Quit:
+                abort_shutdown = self._quit_handler()
+                if abort_shutdown is not True:
+                    raise SafeQuit()
+                    
+            yield event
+            event = _poll_event()
     
-    def __exit__(self, *args):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         print("Deinitializing...")
         for obj in list(_sdl_allocated_objects):
             obj.destroy()
+        
         lib.TTF_Quit()
         lib.Mix_Quit()
         lib.IMG_Quit()
         lib.SDL_Quit()
+        
         print("SDL Quit")
+        if exc_type == SafeQuit or exc_type == KeyboardInterrupt:
+            return True
 
 def init_everything():
     """Initializes SDL with all its subsystems.

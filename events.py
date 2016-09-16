@@ -439,16 +439,10 @@ def _wrap_event(union):
     else:
         raise Exception('Unreachable')
 
-def poll_event():
+def _poll_event():
     event = ffi.new("SDL_Event*")
     res = lib.SDL_PollEvent(event)
     if res == 0:
         return None
     
     return _wrap_event(event)
-
-def get_events():
-    event = poll_event()
-    while event != None:
-        yield event
-        event = poll_event()

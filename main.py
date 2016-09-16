@@ -1,7 +1,7 @@
 import time
 
-from sdl2cffi import init_everything, get_events, WindowBuilder, Rect, Font
-from sdl2cffi.events import Quit
+from sdl2cffi import init_everything, WindowBuilder, Rect, Font
+from sdl2cffi.events import Quit, KeyDown
 
 def test():
     from ._sdl2 import ffi, lib
@@ -20,7 +20,7 @@ def test():
 
 def main():
     """Entry point"""
-    with init_everything():
+    with init_everything() as context:
         print("RUN GAME!")
         window = WindowBuilder().title("Test Game").build()
         renderer = window.build_renderer().build()
@@ -36,19 +36,18 @@ def main():
         
         loop = True
         while loop:
-            for event in get_events():
-                if type(event) == Quit:
-                    loop = False
-                else:
-                    pass
-                    #print(event)
+            for event in context.get_events():
+                if type(event) == KeyDown:
+                    raise Exception("KEYDOWN!")
             
             renderer.clear()
             renderer.c_fill_rect((255, 0, 0), rect)
             renderer.copy(sloth, dst_rect=sloth_rect)
             renderer.copy(tex, dst_rect=tex_rect)
             renderer.present()
-            time.sleep(0.1)        
+            time.sleep(0.1)
+    
+    print("After Context is finished")     
 
 if __name__ == '__main__':
     main()
