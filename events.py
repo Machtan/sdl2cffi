@@ -1,5 +1,5 @@
 from ._sdl2 import ffi, lib
-from keyboard import KeyMod
+from .keyboard import KeyMod
 import sys as _sys
 
 # ============ Notification events =================

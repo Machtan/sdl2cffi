@@ -21,8 +21,15 @@ class Context:
         assert_nonzero(lib.Mix_Init(self.mixer_flags))
         assert_zero(lib.TTF_Init())
         return self
+    
+    def set_quit_handler(self, handler):
+        """Sets a function to be called when the Quit event is fired.
+        Unless the function returns 'True', the context deinitialized,
+        and execution returns to after the 'with' statement"""
+        self._quit_handler = handler
 
     def get_events(self):
+        """Iterates over all pending events and empties the queue"""
         event = _poll_event()
         while event != None:
             if type(event) == Quit:
