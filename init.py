@@ -1,6 +1,7 @@
 from ._sdl2 import ffi, lib
 from .common import assert_zero, assert_nonzero, _sdl_allocated_objects
 from .events import _poll_event, Quit
+from .window import WindowBuilder
 import sys as _sys
 
 class SafeQuit(Exception): pass
@@ -39,6 +40,10 @@ class Context:
                     
             yield event
             event = _poll_event()
+    
+    def build_window(self):
+        """Starts building a window with a WindowBuilder"""
+        return WindowBuilder()
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         print("Deinitializing...")

@@ -69,12 +69,20 @@ class Rect:
         self.y = y - self.h / 2
         return self
     
+    def resize(self, w, h):
+        self.w = w
+        self.h = h
+        return self
+    
     def moved_to(self, x, y):
-        self.clone().move_to(x, y)
+        return self.clone().move_to(x, y)
     
     def moved_by(self, dx, dy):
-        self.clone().move_by(dx, dy)
+        return self.clone().move_by(dx, dy)
     
     def centered_on(self, x, y):
         return self.clone().center_on(x, y)
+    
+    def resized(self, w, h):
+        return self.clone().resize(w, h)
         
