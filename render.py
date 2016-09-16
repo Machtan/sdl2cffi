@@ -11,6 +11,13 @@ class Texture(Allocated(lib.SDL_DestroyTexture)):
         self.width = wptr[0]
         self.height = hptr[0]
 
+class Flip:
+    None = lib.SDL_FLIP_NONE
+	Horizontal = lib.SDL_FLIP_HORIZONTAL
+	Vertical = lib.SDL_FLIP_VERTICAL
+    Both = lib.SDL_FLIP_HORIZONTAL | lib.SDL_FLIP_VERTICAL
+
+
 class Renderer(Allocated(lib.SDL_DestroyRenderer)):
     def __init__(self, raw):
         super().__init__()
@@ -49,12 +56,50 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
         dst = dst_rect._raw if dst_rect is not None else ffi.NULL
         assert_zero(lib.SDL_RenderCopy(self._raw, texture._raw, src, dst))
     
+    def copy_ex(self, texture, src_rect=None, dst_rect=None, angle=0, center=None, flip=Flip.None):
+        """Renders the source part of the texture at destination, optionally 
+        rotating and/or flipping it.
+        The 'flip' argument should be a 'Flip' enum value.
+        If no source area is given, the whole texture is used.
+        If no destination is given, the texture is stretched and the whole area
+        is filled.
+        If no rotation center is given, the center of the dst_rect is used."""
+        src = src_rect._raw if src_rect is not None else ffi.NULL
+        dst = dst_rect._raw if dst_rect is not None else ffi.NULL
+        center = ffi.new("SDL_Point *", center) if center is not None else ffi.NULL
+        assert_zero(lib.SDL_RenderCopyEx(
+            self._raw, texture._raw, src_rect, dst_rect, angle, center, flip
+        ))
+    
+    def fill_rect(self, rect):
+        assert_zero(lib.SDL_RenderFillRect(self._raw, rect._raw))
+    
+    def draw_rect(self, rect):
+        assert_zero(lib.SDL_RenderDrawRect(self._raw, rect._raw))
+    
+    def draw_line(self, x1, y1, x2, y2):
+        assert_zero(lib.SDL_RenderDrawLine(self._raw, x1, y1, x2, y2))
+    
+    def draw_point(self, x, y):
+        assert_zero(lib.SDL_RenderDrawPoint(self._raw, x, y))
+    
     def c_fill_rect(self, color, rect):
         self.set_draw_color(*color)
         self.fill_rect(rect)
     
-    def fill_rect(self, rect):
-        assert_zero(lib.SDL_RenderFillRect(self._raw, rect._raw))      
+    def c_draw_rect(self, color, rect):
+        self.set_draw_color(*color)
+        self.draw_rect(rect)
+    
+    def c_draw_line(self, color, x1, y1, x2, y2):
+        self.set_draw_color(*color)
+        self.draw_line(x1, y1, x2, y2)
+    
+    def c_draw_point(self, color, x, y):
+        self.set_draw_color(*color)
+        self.draw_point(x, y)
+    
+         
     
     def present(self):
         lib.SDL_RenderPresent(self._raw)
