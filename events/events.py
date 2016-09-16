@@ -1,4 +1,4 @@
-from ._sdl2 import ffi, lib
+from .._sdl2 import ffi, lib
 
 class TextEditing:
     def __init__(self, union):
@@ -310,12 +310,10 @@ class Joyhatmotion:
             if member == 'type': continue
             print('self.{} = union.{}'.format(member, member))
 
-class Dropfile:
+class DropFile:
     def __init__(self, union):
-        print('==== Dropfile ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
+        self.file = union.file
+        self.timestamp = union.timestamp
 
 def _wrap_event(union):
     if union.type == lib.SDL_TEXTEDITING:
@@ -409,7 +407,7 @@ def _wrap_event(union):
     elif union.type == lib.SDL_JOYHATMOTION:
         return Joyhatmotion(union.jhat)
     elif union.type == lib.SDL_DROPFILE:
-        return Dropfile(union.drop)
+        return DropFile(union.drop)
     else:
         raise Exception('Unreachable')
 
