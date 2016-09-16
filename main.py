@@ -3,6 +3,77 @@ import time
 from sdl2cffi import init_everything, WindowBuilder, Rect, Font
 from sdl2cffi.events import Quit, KeyDown
 
+ITERATIONS = 1000000
+def test_rects():
+    """
+    ITERATIONS = 10000000
+    CFFI rect updated every time: 3.3966338299978815
+    CFFI rect updated on read: 2.492750878998777
+    """
+    from _sdl2 import ffi, lib
+    class Raw:
+        def __init__(self, ptr):
+            self.ptr = ptr
+    
+    class Rect:
+        
+        @property
+        def right(self):
+            return self.x + self.w
+        
+        def __init__(self):
+            self.x = 0
+            self.y = 0
+            self.w = 0
+            self.h = 0
+    
+    class Test:
+        def __init__(self, ptr):
+            self = ptr
+        
+        def method(self):
+            print("It works! (x: {})".format(self.x))
+    
+    start = time.perf_counter()
+    raw = Raw(ffi.new("SDL_Rect *"))
+    for i in range(ITERATIONS):
+        raw.ptr.x += 1
+    
+    elapsed = time.perf_counter() - start
+    print("CFFI rect updated every time: {}".format(elapsed))
+    
+    
+    start = time.perf_counter()
+    raw = Raw(ffi.new("SDL_Rect *"))
+    r = raw.ptr
+    for i in range(ITERATIONS):
+        r.x += 1
+    
+    elapsed = time.perf_counter() - start
+    print("CFFI rect updated with alias: {}".format(elapsed))
+    
+    start = time.perf_counter()
+    raw = ffi.new("SDL_Rect *")
+    rect = Rect()
+    for i in range(ITERATIONS):
+        rect.x += 1
+    raw.x = rect.x
+    raw.y = rect.y
+    raw.w = rect.w
+    raw.h = rect.h
+    elapsed = time.perf_counter() - start
+    print("CFFI rect updated on read: {}".format(elapsed))
+    
+    start = time.perf_counter()
+    raw = ffi.new("SDL_Rect *")
+    rect = Test(raw)
+    rect.method()
+    for i in range(ITERATIONS):
+        rect.x += 1
+    
+    elapsed = time.perf_counter() - start
+    print("Test: {}".format(elapsed))
+
 def test():
     from ._sdl2 import ffi, lib
     
@@ -50,5 +121,5 @@ def main():
     print("After Context is finished")     
 
 if __name__ == '__main__':
-    main()
+    test_rects()
 
