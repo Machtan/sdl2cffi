@@ -11,11 +11,17 @@ class Texture(Allocated(lib.SDL_DestroyTexture)):
         self.width = wptr[0]
         self.height = hptr[0]
 
-class Flip:
-    None = lib.SDL_FLIP_NONE
-	Horizontal = lib.SDL_FLIP_HORIZONTAL
-	Vertical = lib.SDL_FLIP_VERTICAL
+class EFlip:
+    None_ = lib.SDL_FLIP_NONE
+    Horizontal = lib.SDL_FLIP_HORIZONTAL
+    Vertical = lib.SDL_FLIP_VERTICAL
     Both = lib.SDL_FLIP_HORIZONTAL | lib.SDL_FLIP_VERTICAL
+
+class EBlendMode:
+    None_ = lib.SDL_BLENDMODE_NONE
+    Blend = lib.SDL_BLENDMODE_BLEND
+    Add = lib.SDL_BLENDMODE_ADD
+    Mod = lib.SDL_BLENDMODE_MOD
 
 
 class Renderer(Allocated(lib.SDL_DestroyRenderer)):
@@ -29,6 +35,9 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
     
     def set_draw_color(self, r, g, b, a=255):
         assert_zero(lib.SDL_SetRenderDrawColor(self._raw, r, g, b, a))
+    
+    def set_blend_mode(self, mode):
+        assert_zero(lib.SDL_SetRenderDrawEBlendMode(mode))
     
     def clear(self, color=None):
         if color is not None:
@@ -56,10 +65,11 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
         dst = dst_rect._raw if dst_rect is not None else ffi.NULL
         assert_zero(lib.SDL_RenderCopy(self._raw, texture._raw, src, dst))
     
-    def copy_ex(self, texture, src_rect=None, dst_rect=None, angle=0, center=None, flip=Flip.None):
+    def copy_ex(self, texture, src_rect=None, dst_rect=None, angle=0,
+            center=None, flip=EFlip.None_):
         """Renders the source part of the texture at destination, optionally 
         rotating and/or flipping it.
-        The 'flip' argument should be a 'Flip' enum value.
+        The 'flip' argument should be a 'EFlip' enum value.
         If no source area is given, the whole texture is used.
         If no destination is given, the texture is stretched and the whole area
         is filled.

@@ -1,6 +1,6 @@
 from .init import init_everything, init, Context
 from .window import WindowBuilder, Window
-from .render import RendererBuilder, Renderer, Texture
+from .render import RendererBuilder, Renderer, Texture, EBlendMode, EFlip
 from .events import get_events, poll_event
 from .surface import Surface
 from .rect import Rect
