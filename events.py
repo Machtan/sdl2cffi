@@ -1,4 +1,4 @@
-from .._sdl2 import ffi, lib
+from ._sdl2 import ffi, lib
 
 class TextEditing:
     def __init__(self, union):
