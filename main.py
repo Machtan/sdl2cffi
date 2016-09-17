@@ -111,7 +111,9 @@ def main():
                 if type(event) == KeyDown:
                     print("Keydown: key:  {}".format(Keycode.name(event.keycode)))
                     print("         scan: {}".format(Scancode.name(event.scancode)))
-                    
+                    scan = Keycode.to_scancode(event.keycode)
+                    name = Scancode.name(scan)
+                    print("Mapped scan name: {}".format(name))
             
             renderer.clear()
             renderer.c_fill_rect((255, 0, 0), rect)

@@ -265,15 +265,24 @@ class Keycode:
     X                  = lib.SDLK_x
     Y                  = lib.SDLK_y
     Z                  = lib.SDLK_z
-    
+
+_key_reverse_map = { 
+    getattr(Keycode, name): name 
+    for name in dir(Keycode) if not name.startswith("_")
+}
 def get_key_name(value):
-    for mem in dir(Keycode):
-        attr = getattr(Keycode, mem)
-        if attr == value:
-            return mem
-    raise Exception("Unknown key value: '{}'".format(value))
+    res = _key_reverse_map.get(value)
+    if res is None:
+        raise Exception("Unknown key value: '{}'".format(value))
+    return res
 
 setattr(Keycode, "name", get_key_name)
+
+def to_scancode(value):
+    return lib.SDL_GetScancodeFromKey(value)
+
+setattr(Keycode, "to_scancode", to_scancode)
+
 
 class Scancode:
     """Possible scan code values for keyboard events.
@@ -534,11 +543,19 @@ class Scancode:
     Y                  = lib.SDL_SCANCODE_Y
     Z                  = lib.SDL_SCANCODE_Z
 
+_scan_reverse_map = { 
+    getattr(Scancode, name): name 
+    for name in dir(Scancode) if not name.startswith("_")
+}
 def get_scan_name(value):
-    for mem in dir(Scancode):
-        attr = getattr(Scancode, mem)
-        if attr == value:
-            return mem
-    raise Exception("Unknown key value: '{}'".format(value))
+    res = _scan_reverse_map.get(value)
+    if res is None:
+        raise Exception("Unknown key value: '{}'".format(value))
+    return res
 
 setattr(Scancode, "name", get_scan_name)
+
+def to_keycode(value):
+    return lib.SDL_GetKeyFromScancode(value)
+
+setattr(Scancode, "to_keycode", to_keycode)
