@@ -3,6 +3,7 @@ import sys
 import re
 import pprint
 from collections import OrderedDict
+from _sdl2 import lib, ffi
 
 from setup.fix_enums import find_enums
 
@@ -132,10 +133,19 @@ def generate_union_wrappers(func_name, type_member, const_prefix, member_map):
             printi(2, "return {}(union.{})".format(cnames[value], member))
     printi(1, "else:")
     printi(2, "raise Exception('Unreachable')")
-    
+
+def wrap_enum(lib, name, prefix):
+    members = [v for v in dir(lib) if v.startswith(prefix)]
+    fixed = ["".join([p.capitalize() for p in mem[len(prefix):].split("_")]) for mem in members]
+    print("class {}:".format(name))
+    longest = longest_name(fixed)
+    for i in range(len(members)):
+        mem, fix = members[i], fixed[i] 
+        pad = (len(longest) - len(fix)) * " "
+        printi(1, "{}{} = lib.{}".format(fix, pad, mem))
 
 def main():
-    pass#generate_union_wrappers("_wrap_event", "type", "SDL_", EVENT_MEMBER_MAP)
+    wrap_enum(lib, "Scancode", "SDL_SCANCODE_")
 
 if __name__ == '__main__':
     main()

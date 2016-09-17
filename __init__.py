@@ -4,9 +4,9 @@ from .render import RendererBuilder, Renderer, Texture, EBlendMode, EFlip
 from .surface import Surface
 from .rect import Rect
 from .font import Font
+from .keyboard import KeyMod, Keycode, Scancode
 
 from . import events
-from . import keyboard
 
 # Is this the right way?
 del _sdl2
@@ -16,3 +16,4 @@ del render
 del surface
 del rect
 del font
+del keyboard

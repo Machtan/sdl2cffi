@@ -1,7 +1,7 @@
 import time
 
-from sdl2cffi import init_everything, WindowBuilder, Rect, Font
-from sdl2cffi.events import Quit, KeyDown
+from sdl2 import init_everything, WindowBuilder, Rect, Font, Keycode, Scancode
+from sdl2.events import Quit, KeyDown
 
 ITERATIONS = 1000000
 def test_rects():
@@ -93,7 +93,7 @@ def main():
     """Entry point"""
     with init_everything() as context:
         print("RUN GAME!")
-        window = WindowBuilder().title("Test Game").build()
+        window = context.build_window().title("Test Game").build()
         renderer = window.build_renderer().build()
         sloth = renderer.load_texture("Sloth.png")
         sloth_rect = Rect(300, 100, 128, 128)
@@ -109,7 +109,9 @@ def main():
         while loop:
             for event in context.get_events():
                 if type(event) == KeyDown:
-                    raise Exception("KEYDOWN!")
+                    print("Keydown: key:  {}".format(Keycode.name(event.keycode)))
+                    print("         scan: {}".format(Scancode.name(event.scancode)))
+                    
             
             renderer.clear()
             renderer.c_fill_rect((255, 0, 0), rect)
@@ -121,5 +123,5 @@ def main():
     print("After Context is finished")     
 
 if __name__ == '__main__':
-    test_rects()
+    main()
 
