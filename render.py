@@ -11,13 +11,8 @@ class Texture(Allocated(lib.SDL_DestroyTexture)):
         self.width = wptr[0]
         self.height = hptr[0]
 
-class EFlip:
-    None_ = lib.SDL_FLIP_NONE
-    Horizontal = lib.SDL_FLIP_HORIZONTAL
-    Vertical = lib.SDL_FLIP_VERTICAL
-    Both = lib.SDL_FLIP_HORIZONTAL | lib.SDL_FLIP_VERTICAL
 
-class EBlendMode:
+class BlendMode:
     None_ = lib.SDL_BLENDMODE_NONE
     Blend = lib.SDL_BLENDMODE_BLEND
     Add = lib.SDL_BLENDMODE_ADD
@@ -66,7 +61,7 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
         assert_zero(lib.SDL_RenderCopy(self._raw, texture._raw, src, dst))
     
     def copy_ex(self, texture, src_rect=None, dst_rect=None, angle=0,
-            center=None, flip=EFlip.None_):
+            center=None, flip_hor=False, flip_ver=False):
         """Renders the source part of the texture at destination, optionally 
         rotating and/or flipping it.
         The 'flip' argument should be a 'EFlip' enum value.
@@ -77,8 +72,11 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
         src = src_rect._raw if src_rect is not None else ffi.NULL
         dst = dst_rect._raw if dst_rect is not None else ffi.NULL
         center = ffi.new("SDL_Point *", center) if center is not None else ffi.NULL
+        hflip = lib.SDL_FLIP_HORIZONTAL if flip_hor else 0
+        vflip = lib.SDL_FLIP_VERTICAL if flip_ver else 0
         assert_zero(lib.SDL_RenderCopyEx(
-            self._raw, texture._raw, src_rect, dst_rect, angle, center, flip
+            self._raw, texture._raw, src, dst, angle, center, 
+            hflip | vflip
         ))
     
     def fill_rect(self, rect):
