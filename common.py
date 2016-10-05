@@ -5,11 +5,12 @@ _sdl_allocated_objects = set()
 def Allocated(free_function):
     class Allocated:
         __destroyed = False
+        _raw = None
         def __init__(self):
             _sdl_allocated_objects.add(self)
         
         def destroy(self):
-            if not self.__destroyed:
+            if not self.__destroyed and self._raw is not None:
                 print("{} freed!".format(type(self)))
                 free_function(self._raw)
                 self.__destroyed = True
