@@ -8,6 +8,13 @@ class Rect:
         self.w = w
         self.h = h
     
+    def from_points(x1, y1, x2, y2):
+        x = min(x1, x2)
+        w = max(x1, x2) - x
+        y = min(y1, y2)
+        h = max(y1, y2) - y
+        return Rect(x, y, w, h)
+    
     @property
     def _raw(self):
         self._raw_.x = self.x
@@ -73,6 +80,19 @@ class Rect:
         self.w = w
         self.h = h
         return self
+    
+    def include(self, x, y):
+        """Resizes the rect to include the given point"""
+        if x < self.x:
+            self.w += self.x - x
+            self.x = x
+        elif x > self.right:
+            self.w = x - self.x
+        if y < self.y:
+            self.h += self.y - y
+            self.y = y
+        elif y > self.bottom:
+            self.h = y - self.y
     
     def moved_to(self, x, y):
         return self.clone().move_to(x, y)
