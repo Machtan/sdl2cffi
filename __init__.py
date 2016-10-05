@@ -5,6 +5,7 @@ from .surface import Surface
 from .rect import Rect
 from .font import Font
 from .keyboard import KeyMod, Keycode, Scancode
+from .mouse import MouseButton
 
 from . import events
 
@@ -17,3 +18,4 @@ del surface
 del rect
 del font
 del keyboard
+del mouse
