@@ -129,10 +129,12 @@ class MouseMotion:
 
 class MouseWheel:
     def __init__(self, union):
-        print('==== MouseWheel ====')
-        for member in dir(union):
-            if member == 'type': continue
-            print('self.{} = union.{}'.format(member, member))
+        self.direction = union.direction
+        self.timestamp = union.timestamp
+        self.which = union.which
+        self.windowID = union.windowID
+        self.x = union.x
+        self.y = union.y
 
 # ================= Keyboard events ===================
 
