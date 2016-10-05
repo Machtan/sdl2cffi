@@ -1,5 +1,6 @@
 from ._sdl2 import lib, ffi
 from .common import Allocated, assert_nonnull, assert_zero
+from .rect import Rect
 
 class Texture(Allocated(lib.SDL_DestroyTexture)):
     def __init__(self, raw):
@@ -10,6 +11,14 @@ class Texture(Allocated(lib.SDL_DestroyTexture)):
         assert_zero(lib.SDL_QueryTexture(raw, ffi.NULL, ffi.NULL, wptr, hptr))
         self.width = wptr[0]
         self.height = hptr[0]
+    
+    def rect(self):
+        """Returns a rectangle with the size of this texture"""
+        return Rect(0, 0, self.width, self.height)
+    
+    def rect_at(self, x, y):
+        """Returns a rectangle with the size of this texture at the given position"""
+        return Rect(x, y, self.width, self.height)
 
 
 class BlendMode:
