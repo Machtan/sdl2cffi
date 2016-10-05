@@ -20,7 +20,9 @@ class BlendMode:
 
 
 class Renderer(Allocated(lib.SDL_DestroyRenderer)):
-    def __init__(self, raw):
+    def __init__(self, raw, *args):
+        if len(args) > 0:
+            raise ValueError("Renderer.__init__ should not be called: Use Window.build_renderer(self)!")
         super().__init__()
         self._raw = raw
         self.clear_color = (0, 0, 0, 255)
@@ -113,11 +115,17 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
         lib.SDL_RenderPresent(self._raw)
 
 class RendererBuilder:
+    """A builder for renderers."""
     def __init__(self, window):
         self._window = window
         self._index = -1
         self._flags = 0
     
-    def build(self):
+    def finish(self):
+        """Builds the renderer and returns it"""
         raw = assert_nonnull(lib.SDL_CreateRenderer(self._window._raw, self._index, self._flags))
         return Renderer(raw)
+    
+    def build(self):
+        print("Warning: RendererBuilder.build is deprecated, use .finish!")
+        return self.finish()

@@ -15,7 +15,7 @@ class Font(Allocated(lib.TTF_CloseFont)):
         self._raw = raw
     
     def line_skip(self):
-        return lib.TTF_FontLineSkip(self.raw)
+        return lib.TTF_FontLineSkip(self._raw)
     
     def render_blended(self, text, color):
         raw_color = ffi.new("SDL_Color*", color)
