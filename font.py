@@ -8,7 +8,9 @@ class Font(Allocated(lib.TTF_CloseFont)):
         raw = assert_nonnull(lib.TTF_OpenFont(rawpath, point_size))
         return Font(raw)
     
-    def __init__(self, raw):
+    def __init__(self, raw, *args):
+        if len(args) > 0:
+            raise ValueError("Font.__init__ should not be called: Use Font.load!")
         super().__init__()
         self._raw = raw
     
