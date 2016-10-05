@@ -26,6 +26,7 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
         super().__init__()
         self._raw = raw
         self.clear_color = (0, 0, 0, 255)
+        self.clip_rects = []
     
     def set_clear_color(self, r, g, b, a=255):
         self.clear_color = (r, g, b, a)
@@ -89,6 +90,23 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
     def disable_clip_rect(self):
         """Disables the clip rect for this renderer"""
         assert_zero(lib.SDL_RenderSetClipRect(self._raw, ffi.NULL))
+    
+    def push_clip_rect(self, rect):
+        """Pushes the given rect as a clip rect for the renderer"""
+        self.clip_rects.append(rect)
+        self.set_clip_rect(rect)
+    
+    def pop_clip_rect(self):
+        """Pops the current clip rect of the renderer and returns it,
+        setting the clip rect to the next one, or disabling it"""
+        if not self.clip_rects:
+            raise ValueError("Attempted to pop clip rect with none active!")
+        popped = self.clip_rects.pop()
+        if not self.clip_rects:
+            self.disable_clip_rect()
+        else:
+            self.set_clip_rect(self.clip_rects[-1])
+        return popped
     
     def fill_rect(self, rect):
         """Fills a rectangular area with the current drawing color"""
