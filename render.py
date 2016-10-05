@@ -81,10 +81,21 @@ class Renderer(Allocated(lib.SDL_DestroyRenderer)):
             hflip | vflip
         ))
     
+    def set_clip_rect(self, rect):
+        """Sets the clip rect of the renderer to the given rect.
+        To disable the clip_rect, use Rect.disable_clip_rect"""
+        assert_zero(lib.SDL_RenderSetClipRect(self._raw, rect._raw))
+    
+    def disable_clip_rect(self):
+        """Disables the clip rect for this renderer"""
+        assert_zero(lib.SDL_RenderSetClipRect(self._raw, ffi.NULL))
+    
     def fill_rect(self, rect):
+        """Fills a rectangular area with the current drawing color"""
         assert_zero(lib.SDL_RenderFillRect(self._raw, rect._raw))
     
     def draw_rect(self, rect):
+        """Draws the outline of a rectangular area with the current drawing color"""
         assert_zero(lib.SDL_RenderDrawRect(self._raw, rect._raw))
     
     def draw_line(self, x1, y1, x2, y2):
