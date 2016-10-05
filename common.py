@@ -11,7 +11,7 @@ def Allocated(free_function):
         
         def destroy(self):
             if not self.__destroyed and self._raw is not None:
-                print("{} freed!".format(type(self)))
+                #print("{} freed!".format(type(self)))
                 free_function(self._raw)
                 self.__destroyed = True
                 _sdl_allocated_objects.remove(self)

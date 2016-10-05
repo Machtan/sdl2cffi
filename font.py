@@ -23,6 +23,13 @@ class Font(Allocated(lib.TTF_CloseFont)):
         raw = assert_nonnull(lib.TTF_RenderUTF8_Blended(self._raw, raw_text, raw_color[0]))
         return Surface(raw)
     
+    def render_shaded(self, text, fgcolor, bgcolor):
+        raw_fg = ffi.new("SDL_Color*", fgcolor)
+        raw_bg = ffi.new("SDL_Color*", bgcolor)
+        raw_text = bytes(text, encoding="utf8")
+        raw = assert_nonnull(lib.TTF_RenderUTF8_Shaded(self._raw, raw_text, raw_fg[0], raw_bg[0]))
+        return Surface(raw)
+    
     def size_of(self, text):
         wptr = ffi.new("int *")
         hptr = ffi.newr("int *")
