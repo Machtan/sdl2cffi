@@ -15,6 +15,13 @@ class Rect:
         h = max(y1, y2) - y
         return Rect(x, y, w, h)
     
+    def from_center(center, size):
+        cx, cy = center
+        w, h = size
+        x = int(round(cx - w / 2))
+        y = int(round(cy - h / 2))
+        return Rect(x, y, w, h)
+    
     @property
     def _raw(self):
         self._raw_.x = self.x
@@ -105,4 +112,7 @@ class Rect:
     
     def resized(self, w, h):
         return self.clone().resize(w, h)
+    
+    def contains(self, x, y):
+        return x >= self.x and x <= self.right and y >= self.y and y <= self.bottom
         
