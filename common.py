@@ -1,4 +1,5 @@
 from ._sdl2 import lib, ffi
+from typing import Callable, Any, Optional
 
 _sdl_allocated_objects = set()
 
@@ -6,8 +7,9 @@ class Allocated:
     """An abstract class for objects holding pointers to SDL2 objects that
     must be freed with a function."""
     __destroyed = False
+    # TODO: How do I annotate this for mypy?
     _raw = None
-    def __init__(self, free_function):
+    def __init__(self, free_function: Callable[[Any], None]) -> None:
         _sdl_allocated_objects.add(self)
         self.__free_function = free_function
     

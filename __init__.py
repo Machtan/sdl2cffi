@@ -1,4 +1,4 @@
-from .init import init_everything, init, Context
+from ._init import init_everything, init, Context
 from .window import WindowBuilder, Window
 from .render import RendererBuilder, Renderer, Texture, BlendMode
 from .surface import Surface
@@ -11,7 +11,7 @@ from .types import Color, Point, Size
 from . import events
 
 # Is this the right way?
-del _sdl2
+del _init
 del common
 del window
 del render

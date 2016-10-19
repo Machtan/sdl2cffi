@@ -5,6 +5,7 @@ from .types import Color, Size
 
 class Font(Allocated):
     """A TrueType font"""
+    # TODO: find out how to tell mypy that this is static
     def load(path: str, point_size: int): # TODO forward return
         """Loads the font at the given path in the given point size in pixels.
         Only TrueType fonts are supported."""
@@ -46,6 +47,6 @@ class Font(Allocated):
         wptr = ffi.new("int *")
         hptr = ffi.newr("int *")
         raw_text = bytes(text, encoding="utf8")
-        assert_zero(TTF_SizeUTF8(self._raw, raw_text, wptr, hptr))
+        assert_zero(lib.TTF_SizeUTF8(self._raw, raw_text, wptr, hptr))
         return (wptr[0], hptr[0])
     

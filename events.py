@@ -348,17 +348,24 @@ class Lastevent:
 # ================== Functions ==============================
 
 Event = Union[
-    TextEditing, MouseMotion, UserEvent, ControllerDeviceAdded, 
-    KeymapChanged, FingerMotion, DollarRecord, JoyDeviceAdded, ClipboardUpdate,
-    KeyDown, KeyUp, AppTerminating, SysWMEvent, MouseButtonUp,
-    ControllerButtonUp, AppDidEnterForeground, WindowEvent, AudioDeviceAdded,
-    Quit, ControllerDeviceRemoved, AppWillEnterBackground, 
-    JoyButtonUp, JoyBallMotion, AppWillEnterForeground, 
-    ControllerDeviceRemapped, MultiGesture, ControllerButtonUp, 
-    AppDidEnterBackground, MouseWheel, JoyDeviceRemoved, FingerUp, TextInput,
-    KeyUp, RenderDeviceReset, MouseButtonDown, RenderTargetsReset, 
-    JoyButtonDown, JoyAxisMotion, DollarGesture, FingerDown, AppLowMemory,
-    AudioDeviceRemoved, ControllerAxisMotion, JoyHatMotion, DropFile,
+    AppWillEnterBackground, AppDidEnterBackground,
+    AppWillEnterForeground, AppDidEnterForeground,
+    AppTerminating,
+    AudioDeviceAdded, AudioDeviceRemoved,
+    MouseButtonDown, MouseButtonUp, MouseMotion, MouseWheel,
+    FingerDown, FingerUp, FingerMotion, MultiGesture, DollarRecord,
+    KeyDown, KeyUp, KeymapChanged,
+    TextEditing, TextInput,
+    ControllerDeviceAdded, ControllerDeviceRemoved, ControllerDeviceRemapped,
+    ControllerButtonDown, ControllerButtonUp, 
+    ControllerAxisMotion, 
+    JoyDeviceAdded, JoyDeviceRemoved,
+    JoyButtonUp, JoyBallMotion, JoyHatMotion,
+    JoyButtonDown, JoyAxisMotion, DollarGesture, AppLowMemory,
+    WindowEvent, SysWMEvent, DropFile,
+    RenderDeviceReset, RenderTargetsReset,
+    UserEvent, ClipboardUpdate,
+    Quit,
 ]
 
 def _wrap_event(union) -> Event:

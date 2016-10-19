@@ -9,6 +9,7 @@ class Window(Allocated):
         super().__init__(lib.SDL_DestroyWindow)
         self._raw = raw
     
+    # TODO: Tell mypy this is static
     def build(): #-> WindowBuilder: # TODO: How to forward declare?
         """Starts building a new window""" 
         return WindowBuilder()
