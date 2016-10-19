@@ -2,24 +2,24 @@ from ._sdl2 import lib, ffi
 
 _sdl_allocated_objects = set()
 
-def Allocated(free_function):
-    class Allocated:
-        __destroyed = False
-        _raw = None
-        def __init__(self):
-            _sdl_allocated_objects.add(self)
-        
-        def destroy(self):
-            if not self.__destroyed and self._raw is not None:
-                #print("{} freed!".format(type(self)))
-                free_function(self._raw)
-                self.__destroyed = True
-                _sdl_allocated_objects.remove(self)
-        
-        def __del__(self):
-            self.destroy()
+class Allocated:
+    """An abstract class for objects holding pointers to SDL2 objects that
+    must be freed with a function."""
+    __destroyed = False
+    _raw = None
+    def __init__(self, free_function):
+        _sdl_allocated_objects.add(self)
+        self.__free_function = free_function
     
-    return Allocated
+    def destroy(self):
+        if not self.__destroyed and self._raw is not None:
+            #print("{} freed!".format(type(self)))
+            self.__free_function(self._raw)
+            self.__destroyed = True
+            _sdl_allocated_objects.remove(self)
+    
+    def __del__(self):
+        self.destroy()
 
 def get_error():
     return str(ffi.string(lib.SDL_GetError()), encoding="utf8")

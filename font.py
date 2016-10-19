@@ -2,7 +2,7 @@ from ._sdl2 import lib, ffi
 from .common import Allocated, assert_zero, assert_nonnull
 from .surface import Surface
 
-class Font(Allocated(lib.TTF_CloseFont)):
+class Font(Allocated):
     def load(path, point_size):
         rawpath = bytes(path, encoding="utf8")
         raw = assert_nonnull(lib.TTF_OpenFont(rawpath, point_size))
@@ -11,7 +11,7 @@ class Font(Allocated(lib.TTF_CloseFont)):
     def __init__(self, raw, *args):
         if len(args) > 0:
             raise ValueError("Font.__init__ should not be called: Use Font.load!")
-        super().__init__()
+        super().__init__(lib.TTF_CloseFont)
         self._raw = raw
     
     def line_skip(self):
