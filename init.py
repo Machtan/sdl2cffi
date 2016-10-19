@@ -1,8 +1,9 @@
 from ._sdl2 import ffi, lib
 from .common import assert_zero, assert_nonzero, _sdl_allocated_objects
-from .events import _poll_event, Quit
+from .events import _poll_event, Quit, Event
 from .window import WindowBuilder
 import sys as _sys
+from typing import Callable, Iterator
 
 class SafeQuit(Exception): pass
 
@@ -23,13 +24,13 @@ class Context:
         assert_zero(lib.TTF_Init())
         return self
     
-    def set_quit_handler(self, handler):
+    def set_quit_handler(self, handler: Callable[[], bool]):
         """Sets a function to be called when the Quit event is fired.
         Unless the function returns 'True', the context deinitialized,
         and execution returns to after the 'with' statement"""
         self._quit_handler = handler
 
-    def get_events(self):
+    def get_events(self) -> Iterator[Event]:
         """Iterates over all pending events and empties the queue"""
         event = _poll_event()
         while event != None:
@@ -41,7 +42,7 @@ class Context:
             yield event
             event = _poll_event()
     
-    def build_window(self):
+    def build_window(self) -> WindowBuilder:
         """Starts building a window with a WindowBuilder"""
         return WindowBuilder()
     
@@ -59,7 +60,7 @@ class Context:
         if exc_type == SafeQuit or exc_type == KeyboardInterrupt:
             return True
 
-def init_everything():
+def init_everything() -> Context:
     """Initializes SDL with all its subsystems.
     Returns a context to run an SDL game in."""
     image_flags = (lib.IMG_INIT_JPG | lib.IMG_INIT_PNG | 
@@ -69,7 +70,7 @@ def init_everything():
     return Context(lib.SDL_INIT_EVERYTHING, image_flags, mixer_flags)
 
 def init(events=False, video=False, audio=False, game_controller=False,
-        haptic=False, joystick=False, timer=False):
+        haptic=False, joystick=False, timer=False) -> Context:
     """Initializes SDL with the given subsystems active.
     Returns a context to run an SDL game in."""
     flags = 0

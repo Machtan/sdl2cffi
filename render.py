@@ -2,10 +2,8 @@ from ._sdl2 import lib, ffi
 from .common import Allocated, assert_nonnull, assert_zero
 from .rect import Rect
 from .surface import Surface
+from .types import Color, Point
 from typing import Optional, Union, Tuple
-
-Color = Union[Tuple[int, int, int], Tuple[int, int, int, int]]
-Point = Tuple[int, int]
 
 class Texture(Allocated):
     def __init__(self, raw):

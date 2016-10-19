@@ -6,6 +6,7 @@ from .rect import Rect
 from .font import Font
 from .keyboard import KeyMod, Keycode, Scancode
 from .mouse import MouseButton
+from .types import Color, Point, Size
 
 from . import events
 
@@ -19,3 +20,4 @@ del rect
 del font
 del keyboard
 del mouse
+# Don't del types

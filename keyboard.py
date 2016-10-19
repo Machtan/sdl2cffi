@@ -1,6 +1,6 @@
 from _sdl2 import lib, ffi
 
-class KeyMod:
+class KeyMod(int):
     None_ = lib.KMOD_NONE
     LShift = lib.KMOD_LSHIFT
     RShift = lib.KMOD_RSHIFT
@@ -14,7 +14,7 @@ class KeyMod:
     CapsLock = lib.KMOD_CAPS
     AltGr = lib.KMOD_MODE
 
-class Keycode:
+class Keycode(int):
     """Possible key code values for keyboard events.
     This is the 'logical' value of the button pressed.
     For registering text input, you should use the TextInput and TextEditing 
@@ -270,7 +270,7 @@ _key_reverse_map = {
     getattr(Keycode, name): name 
     for name in dir(Keycode) if not name.startswith("_")
 }
-def get_key_name(value):
+def get_key_name(value: int) -> str:
     res = _key_reverse_map.get(value)
     if res is None:
         raise Exception("Unknown key value: '{}'".format(value))
@@ -278,13 +278,8 @@ def get_key_name(value):
 
 setattr(Keycode, "name", get_key_name)
 
-def to_scancode(value):
-    return lib.SDL_GetScancodeFromKey(value)
 
-setattr(Keycode, "to_scancode", to_scancode)
-
-
-class Scancode:
+class Scancode(int):
     """Possible scan code values for keyboard events.
     The scan code identifies the 'physical' location, which means that it's
     good for things like WASD movement, in case the user rebinds their
@@ -547,7 +542,7 @@ _scan_reverse_map = {
     getattr(Scancode, name): name 
     for name in dir(Scancode) if not name.startswith("_")
 }
-def get_scan_name(value):
+def get_scan_name(value: Scancode) -> str:
     res = _scan_reverse_map.get(value)
     if res is None:
         raise Exception("Unknown key value: '{}'".format(value))
@@ -555,7 +550,12 @@ def get_scan_name(value):
 
 setattr(Scancode, "name", get_scan_name)
 
-def to_keycode(value):
+def to_scancode(value: Keycode) -> Scancode:
+    return lib.SDL_GetScancodeFromKey(value)
+
+setattr(Keycode, "to_scancode", to_scancode)
+
+def to_keycode(value: Scancode) -> Keycode:
     return lib.SDL_GetKeyFromScancode(value)
 
 setattr(Scancode, "to_keycode", to_keycode)

@@ -1,6 +1,7 @@
 from ._sdl2 import ffi, lib
 from .keyboard import KeyMod
 import sys as _sys
+from typing import Union
 
 # ============ Notification events =================
 
@@ -332,6 +333,7 @@ class ControllerAxisMotion:
 
 # =================== Unused events =========================
 
+"""
 class Firstevent:
     def __init__(self, union):
         print('==== Firstevent ====')
@@ -341,11 +343,25 @@ class Firstevent:
 
 class Lastevent:
     pass
-
+"""
 
 # ================== Functions ==============================
 
-def _wrap_event(union):
+Event = Union[
+    TextEditing, MouseMotion, UserEvent, ControllerDeviceAdded, 
+    KeymapChanged, FingerMotion, DollarRecord, JoyDeviceAdded, ClipboardUpdate,
+    KeyDown, KeyUp, AppTerminating, SysWMEvent, MouseButtonUp,
+    ControllerButtonUp, AppDidEnterForeground, WindowEvent, AudioDeviceAdded,
+    Quit, ControllerDeviceRemoved, AppWillEnterBackground, 
+    JoyButtonUp, JoyBallMotion, AppWillEnterForeground, 
+    ControllerDeviceRemapped, MultiGesture, ControllerButtonUp, 
+    AppDidEnterBackground, MouseWheel, JoyDeviceRemoved, FingerUp, TextInput,
+    KeyUp, RenderDeviceReset, MouseButtonDown, RenderTargetsReset, 
+    JoyButtonDown, JoyAxisMotion, DollarGesture, FingerDown, AppLowMemory,
+    AudioDeviceRemoved, ControllerAxisMotion, JoyHatMotion, DropFile,
+]
+
+def _wrap_event(union) -> Event:
     if union.type == lib.SDL_TEXTEDITING:
         return TextEditing(union.edit)
     elif union.type == lib.SDL_MOUSEMOTION:
@@ -367,7 +383,7 @@ def _wrap_event(union):
     elif union.type == lib.SDL_KEYDOWN:
         return KeyDown(union.key)
     elif union.type == lib.SDL_FIRSTEVENT:
-        return Firstevent(union.first)
+        raise Exception("SDL Invariant: FirstEvent sent")
     elif union.type == lib.SDL_APP_TERMINATING:
         return AppTerminating()
     elif union.type == lib.SDL_SYSWMEVENT:
@@ -409,7 +425,7 @@ def _wrap_event(union):
     elif union.type == lib.SDL_FINGERUP:
         return FingerUp(union.tfinger)
     elif union.type == lib.SDL_LASTEVENT:
-        return Lastevent()
+        raise Exception("SDL Invariant: LastEvent sent")
     elif union.type == lib.SDL_TEXTINPUT:
         return TextInput(union.text)
     elif union.type == lib.SDL_KEYUP:
@@ -441,7 +457,7 @@ def _wrap_event(union):
     else:
         raise Exception('Unreachable')
 
-def _poll_event():
+def _poll_event() -> Event:
     event = ffi.new("SDL_Event*")
     res = lib.SDL_PollEvent(event)
     if res == 0:
