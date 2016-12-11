@@ -6,6 +6,7 @@ from .types import Color, Point
 from typing import Optional, Union, Tuple, Any
 
 class Texture:
+    """A GPU-uploaded 'image' (buffer of pixel data)"""
     def __init__(self, ref: SdlRef):
         self._ref = ref
         self._raw = ref._raw
@@ -34,15 +35,15 @@ class BlendMode(int):
 class ClipContext:
     """A context in which the renderer has the given clip rect"""
     def __init__(self, renderer, rect):
-        self.renderer = renderer
-        self.rect = rect
+        self._renderer = renderer
+        self._rect = rect
     
     def __enter__(self):
-        self.renderer.push_clip_rect(self.rect)
-        return self.renderer
+        self._renderer.push_clip_rect(self._rect)
+        return self._renderer
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.renderer.pop_clip_rect()
+        self._renderer.pop_clip_rect()
 
 class Renderer:
     def __init__(self, ref: SdlRef, *args):
@@ -50,23 +51,27 @@ class Renderer:
             raise ValueError("Renderer.__init__ should not be called: Use Window.build_renderer(self)!")
         self._ref = ref
         self._raw = ref._raw
-        self.clear_color = (0, 0, 0, 255)
-        self.clip_rects = []
+        self._clear_color = (0, 0, 0, 255)
+        self._clip_rects = []
     
     def __enter__(self):
         return self
     
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+    
     def set_clear_color(self, r: int, g: int, b: int, a: int=255):
         """Sets the color that the renderer fills the screen with after calls
         to Renderer.clear. (The background color of each frame)."""
-        self.clear_color = (r, g, b, a)
+        self._clear_color = (r, g, b, a)
     
     def set_draw_color(self, r: int, g: int, b: int, a: int=255):
         """Sets the draw color for the renderer, that primitives will be
         drawn with afterwards."""
         assert_zero(lib.SDL_SetRenderDrawColor(self._raw, r, g, b, a))
     
-    def with_offset(self, dx: int, dy: int) -> Any:
+    def offset_context(self, dx: int, dy: int) -> Any:
+        """Returns a context in which the renderer is offset by the given amount"""
         if dx == 0 and dy == 0:
             return self
         else:
@@ -85,7 +90,7 @@ class Renderer:
         if color is not None:
             self.set_draw_color(*color)
         else:
-            self.set_draw_color(*self.clear_color)
+            self.set_draw_color(*self._clear_color)
         assert_zero(lib.SDL_RenderClear(self._raw))
     
     def load_texture(self, filepath: str) -> Texture:
@@ -147,19 +152,19 @@ class Renderer:
     
     def push_clip_rect(self, rect: Rect):
         """Pushes the given rect as a clip rect for the renderer"""
-        self.clip_rects.append(rect)
+        self._clip_rects.append(rect)
         self.set_clip_rect(rect)
     
     def pop_clip_rect(self) -> Rect:
         """Pops the current clip rect of the renderer and returns it,
         setting the clip rect to the next one, or disabling it"""
-        if not self.clip_rects:
+        if not self._clip_rects:
             raise ValueError("Attempted to pop clip rect with none active!")
-        popped = self.clip_rects.pop()
-        if not self.clip_rects:
+        popped = self._clip_rects.pop()
+        if not self._clip_rects:
             self.disable_clip_rect()
         else:
-            self.set_clip_rect(self.clip_rects[-1])
+            self.set_clip_rect(self._clip_rects[-1])
         return popped
     
     def color(self, color: Color) -> Any:
@@ -190,28 +195,33 @@ class Renderer:
 class OffsetContext:
     def __init__(self, offset_renderer, x_offset: int, y_offset: int):
         self.offset_renderer = offset_renderer
-        self.x_offset = x_offset
-        self.y_offset = y_offset
+        self._x_offset = x_offset
+        self._y_offset = y_offset
     
     def __enter__(self):
-        self.offset_renderer.x_offset += self.x_offset
-        self.offset_renderer.y_offset += self.y_offset
+        self.offset_renderer.x_offset += self._x_offset
+        self.offset_renderer.y_offset += self._y_offset
         return self.offset_renderer
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.offset_renderer.x_offset -= self.x_offset
-        self.offset_renderer.y_offset -= self.y_offset
+        self.offset_renderer.x_offset -= self._x_offset
+        self.offset_renderer.y_offset -= self._y_offset
 
 # TODO: Finish implementing
 class OffsetRenderer(Renderer):
     """A renderer that has been offset by a small amount"""
     def __init__(self, original, x_offset, y_offset, *args):
-        super().__init__(renderer._ref, *args)
+        super().__init__(original._ref, *args)
         self._original = original
-        self.x_offset = x_offset
-        self.y_offset = y_offset
+        self._clip_rects = original._clip_rects
+        self._x_offset = x_offset
+        self._y_offset = y_offset
     
-    def with_offset(self, dx: int, dy: int) -> OffsetContext:
+    def set_clear_color(self, r: int, g: int, b: int, a: int=255):
+        super().set_clear_color(r, g, b, a=a)
+        original.set_clear_color(r, g, b, a=a)
+    
+    def offset_context(self, dx: int, dy: int) -> OffsetContext:
         if dx == 0 or dy == 0:
             return self
         else:
@@ -219,9 +229,12 @@ class OffsetRenderer(Renderer):
     
     def __enter__(self):
         return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
 
 class RendererBuilder:
-    """A builder for renderers."""
+    """A builder of renderers."""
     def __init__(self, window):
         self._window = window
         self._index = -1
