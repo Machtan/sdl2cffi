@@ -8,7 +8,7 @@ class Allocated:
     must be freed with a function."""
     __destroyed = False
     # TODO: How do I annotate this for mypy?
-    _raw = None
+    _raw = None # type: Any
     def __init__(self, free_function: Callable[[Any], None]) -> None:
         _sdl_allocated_objects.add(self)
         self.__free_function = free_function
@@ -27,7 +27,7 @@ def get_error():
     return str(ffi.string(lib.SDL_GetError()), encoding="utf8")
 
 class SDLError(Exception):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
 def assert_zero(result):

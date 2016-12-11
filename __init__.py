@@ -7,6 +7,7 @@ from .font import Font
 from .keyboard import KeyMod, Keycode, Scancode
 from .mouse import MouseButton
 from .types import Color, Point, Size
+from .events import Event
 
 from . import events
 

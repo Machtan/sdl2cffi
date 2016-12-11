@@ -2,18 +2,19 @@ from ._sdl2 import lib, ffi
 from .common import Allocated, assert_zero, assert_nonnull
 from .surface import Surface
 from .types import Color, Size
+from typing import Any
 
 class Font(Allocated):
     """A TrueType font"""
     # TODO: find out how to tell mypy that this is static
-    def load(path: str, point_size: int): # TODO forward return
+    def load(path: str, point_size: int) -> 'Font': 
         """Loads the font at the given path in the given point size in pixels.
         Only TrueType fonts are supported."""
         rawpath = bytes(path, encoding="utf8")
         raw = assert_nonnull(lib.TTF_OpenFont(rawpath, point_size))
         return Font(raw)
     
-    def __init__(self, raw, *args):
+    def __init__(self, raw: Any, *args) -> None:
         if len(args) > 0:
             raise ValueError("Font.__init__ should not be called: Use Font.load!")
         super().__init__(lib.TTF_CloseFont)

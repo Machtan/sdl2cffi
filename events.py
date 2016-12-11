@@ -62,7 +62,7 @@ class UserEvent:
 # ================= Window events ==================
 
 class DropFile:
-    """A file or folder was dropped on the window or icon of the application"""
+    """A file or folder was dropped on the window or tray icon of the application."""
     def __init__(self, union):
         self.file = str(ffi.string(union.file), encoding="utf8")
         lib.SDL_free(union.file)
@@ -86,14 +86,14 @@ class WindowEvent:
 # ================== Text events ====================
 
 class TextInput:
-    """Unicode text was entered on the keyboard"""
+    """Unicode text was entered on the keyboard."""
     def __init__(self, union):
         self.text = str(ffi.string(union.text), encoding="utf8")
         self.timestamp = union.timestamp
         self.windowID = union.windowID  
 
 class TextEditing:
-    """The input method started combining a piece of text"""
+    """The input method started combining a piece of text."""
     def __init__(self, union):
         self.length = union.length
         self.start = union.start
@@ -104,6 +104,7 @@ class TextEditing:
 # ================== Mouse events ====================
 
 class MouseButtonDown:
+    "A mouse button was pressed."
     def __init__(self, union):
         self.button = union.button
         self.clicks = union.clicks
@@ -115,9 +116,11 @@ class MouseButtonDown:
         self.y = union.y
 
 class MouseButtonUp(MouseButtonDown):
+    "A mouse button was released."
     pass
 
 class MouseMotion:
+    "The mouse/cursor was moved."
     def __init__(self, union):
         self.state = union.state
         self.timestamp = union.timestamp
@@ -129,6 +132,7 @@ class MouseMotion:
         self.yrel = union.yrel
 
 class MouseWheel:
+    "The mouse wheel was scrolled."
     def __init__(self, union):
         self.direction = union.direction
         self.timestamp = union.timestamp
@@ -139,8 +143,23 @@ class MouseWheel:
 
 # ================= Keyboard events ===================
 
+class ModifierNotPressed:
+    """Describes that a checked-for modifier was not pressed."""
+    def __bool__(self) -> bool:
+        return False
+    
+    def shortcut(self): return self
+    def ctrl(self): return self
+    def gui(self): return self
+    def shift(self): return self
+    def alt(self): return self
+    def cmd(self): return self
+    def windows(self): return self
+
+ModifierCheck = Union['KeyDown', ModifierNotPressed]
+
 class KeyDown:
-    """A key on the keyboard was pressed"""
+    """A key on the keyboard was pressed."""
     def __init__(self, union):
         self.scancode = union.keysym.scancode
         self.keycode = union.keysym.sym
@@ -150,35 +169,42 @@ class KeyDown:
         self.timestamp = union.timestamp
         self.windowID = union.windowID
     
-    def shortcut(self):
-        """Returns whether the common shortcut modifier for the platform was held"""
+    def shortcut(self) -> ModifierCheck:
+        """Returns whether the common shortcut modifier for the platform was held.
+        Can be chained with other modifier checks."""
         if _sys.platform() == "darwin":
-            return self.cmd()
+            return self if self.cmd() else ModifierNotPressed()
         else:
-            return self.ctrl()
+            return self if self.ctrl() else ModifierNotPressed()
     
-    def ctrl(self):
-        """Returns whether a Control button was held"""
+    def ctrl(self) -> ModifierCheck:
+        """Returns whether a Control button was held.
+        Can be chained with other modifier checks."""
         return (self.modifier_flags & (KeyMod.RCtrl | KeyMod.LCtrl)) != 0
     
-    def gui(self):
-        """Returns whether the 'Gui' button was held (Windows/Cmd)"""
+    def gui(self) -> ModifierCheck:
+        """Returns whether the 'Gui' button was held (Windows/Cmd).
+        Can be chained with other modifier checks."""
         return (self.modifier_flags & (KeyMod.RGui | KeyMod.LGui)) != 0
     
-    def shift(self):
-        """Returns whether a Shift button was held"""
+    def shift(self) -> ModifierCheck:
+        """Returns whether a Shift button was held.
+        Can be chained with other modifier checks."""
         return (self.modifier_flags & (KeyMod.RShift | KeyMod.LShift)) != 0
     
-    def alt(self):
-        """Returns whether an Alt button was held"""
+    def alt(self) -> ModifierCheck:
+        """Returns whether an Alt button was held.
+        Can be chained with other modifier checks."""
         return (self.modifier_flags & (KeyMod.RAlt | KeyMod.LAlt)) != 0
     
-    def cmd(self):
-        """Returns whether a Cmd button was held"""
+    def cmd(self) -> ModifierCheck:
+        """Returns whether a Cmd button was held.
+        Can be chained with other modifier checks."""
         return self.gui()
     
-    def windows(self):
-        """Returns whether a Windows button was held"""
+    def windows(self) -> ModifierCheck:
+        """Returns whether a Windows button was held.
+        Can be chained with other modifier checks."""
         return self.gui()
 
 class KeyUp(KeyDown):

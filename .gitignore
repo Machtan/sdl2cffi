@@ -6,3 +6,4 @@ include
 *.c
 enum_importer
 define_importer
+*.pyc
