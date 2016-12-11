@@ -76,7 +76,7 @@ class Renderer:
         if dx == 0 and dy == 0 and not force:
             return self
         else:
-            return OffsetRenderer(self)
+            return OffsetRenderer(self, dx, dy)
     
     # TODO: Is this typing correct?
     def set_blend_mode(self, mode: BlendMode):
