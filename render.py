@@ -70,9 +70,10 @@ class Renderer:
         drawn with afterwards."""
         assert_zero(lib.SDL_SetRenderDrawColor(self._raw, r, g, b, a))
     
-    def offset_context(self, dx: int, dy: int) -> Any:
-        """Returns a context in which the renderer is offset by the given amount"""
-        if dx == 0 and dy == 0:
+    def offset_context(self, dx: int, dy: int, force=False) -> Any:
+        """Returns a context in which the renderer is offset by the given amount.
+        Use 'force' to always create an offset renderer (cheaper for scene graphs)"""
+        if dx == 0 and dy == 0 and not force:
             return self
         else:
             return OffsetRenderer(self)
@@ -221,7 +222,8 @@ class OffsetRenderer(Renderer):
         super().set_clear_color(r, g, b, a=a)
         original.set_clear_color(r, g, b, a=a)
     
-    def offset_context(self, dx: int, dy: int) -> OffsetContext:
+    def offset_context(self, dx: int, dy: int, force=False) -> OffsetContext:
+        """Force is ignored."""
         if dx == 0 or dy == 0:
             return self
         else:
