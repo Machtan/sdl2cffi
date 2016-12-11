@@ -1,10 +1,10 @@
 from ._sdl2 import lib, ffi
-from .common import Allocated, assert_zero, assert_nonnull
+from .common import SdlRef, assert_zero, assert_nonnull
 from .surface import Surface
 from .types import Color, Size
 from typing import Any
 
-class Font(Allocated):
+class Font:
     """A TrueType font"""
     # TODO: find out how to tell mypy that this is static
     def load(path: str, point_size: int) -> 'Font': 
@@ -12,13 +12,14 @@ class Font(Allocated):
         Only TrueType fonts are supported."""
         rawpath = bytes(path, encoding="utf8")
         raw = assert_nonnull(lib.TTF_OpenFont(rawpath, point_size))
-        return Font(raw)
+        ref = SdlRef(raw, lib.TTF_CloseFont)
+        return Font(ref)
     
-    def __init__(self, raw: Any, *args) -> None:
+    def __init__(self, ref: SdlRef, *args) -> None:
         if len(args) > 0:
             raise ValueError("Font.__init__ should not be called: Use Font.load!")
-        super().__init__(lib.TTF_CloseFont)
-        self._raw = raw
+        self._ref = ref
+        self._raw = ref._raw
     
     def line_skip(self) -> int:
         """Returns the recommended line height for lines of text in this font.
@@ -31,7 +32,8 @@ class Font(Allocated):
         raw_color = ffi.new("SDL_Color*", color)
         raw_text = bytes(text, encoding="utf8")
         raw = assert_nonnull(lib.TTF_RenderUTF8_Blended(self._raw, raw_text, raw_color[0]))
-        return Surface(raw)
+        ref = SdlRef(raw, lib.SDL_FreeSurface)
+        return Surface(ref)
     
     def render_shaded(self, text: str, fgcolor: Color, bgcolor: Color) -> Surface:
         """Renders the given text aliased in a way that looks good on top of
@@ -40,7 +42,8 @@ class Font(Allocated):
         raw_bg = ffi.new("SDL_Color*", bgcolor)
         raw_text = bytes(text, encoding="utf8")
         raw = assert_nonnull(lib.TTF_RenderUTF8_Shaded(self._raw, raw_text, raw_fg[0], raw_bg[0]))
-        return Surface(raw)
+        ref = SdlRef(raw, lib.SDL_FreeSurface)
+        return Surface(ref)
     
     def size_of(self, text: str) -> Size:
         """Returns the width and height of the given text rendered using this

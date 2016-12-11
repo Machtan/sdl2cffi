@@ -1,7 +1,7 @@
 from ._sdl2 import lib, ffi
-from .common import Allocated, assert_zero, assert_nonnull
+from .common import SdlRef, assert_zero, assert_nonnull
 
-class Surface(Allocated):
-    def __init__(self, raw):
-        super().__init__(lib.SDL_FreeSurface)
-        self._raw = raw
+class Surface:
+    def __init__(self, ref: SdlRef):
+        self._ref = ref
+        self._raw = ref._raw

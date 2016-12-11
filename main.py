@@ -93,8 +93,8 @@ def main():
     """Entry point"""
     with init_everything() as context:
         print("RUN GAME!")
-        window = context.build_window().title("Test Game").build()
-        renderer = window.build_renderer().build()
+        window = context.build_window().title("Test Game").finish()
+        renderer = window.build_renderer().finish()
         sloth = renderer.load_texture("Sloth.png")
         sloth_rect = Rect(300, 100, 128, 128)
         renderer.set_clear_color(255, 255, 255)
@@ -116,7 +116,7 @@ def main():
                     print("Mapped scan name: {}".format(name))
             
             renderer.clear()
-            renderer.c_fill_rect((255, 0, 0), rect)
+            renderer.color((255, 0, 0)).fill_rect(rect)
             renderer.copy(sloth, dst_rect=sloth_rect)
             renderer.copy(tex, dst_rect=tex_rect)
             renderer.present()

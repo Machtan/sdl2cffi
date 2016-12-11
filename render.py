@@ -1,17 +1,17 @@
 from ._sdl2 import lib, ffi
-from .common import Allocated, assert_nonnull, assert_zero
+from .common import SdlRef, assert_nonnull, assert_zero
 from .rect import Rect
 from .surface import Surface
 from .types import Color, Point
-from typing import Optional, Union, Tuple
+from typing import Optional, Union, Tuple, Any
 
-class Texture(Allocated):
-    def __init__(self, raw):
-        super().__init__(lib.SDL_DestroyTexture)
-        self._raw = raw
+class Texture:
+    def __init__(self, ref: SdlRef):
+        self._ref = ref
+        self._raw = ref._raw
         wptr = ffi.new("int *")
         hptr = ffi.new("int *")
-        assert_zero(lib.SDL_QueryTexture(raw, ffi.NULL, ffi.NULL, wptr, hptr))
+        assert_zero(lib.SDL_QueryTexture(ref._raw, ffi.NULL, ffi.NULL, wptr, hptr))
         self.width = wptr[0]
         self.height = hptr[0]
     
@@ -31,14 +31,30 @@ class BlendMode(int):
     Add = lib.SDL_BLENDMODE_ADD
     Mod = lib.SDL_BLENDMODE_MOD
 
-class Renderer(Allocated):
-    def __init__(self, raw, *args):
+class ClipContext:
+    """A context in which the renderer has the given clip rect"""
+    def __init__(self, renderer, rect):
+        self.renderer = renderer
+        self.rect = rect
+    
+    def __enter__(self):
+        self.renderer.push_clip_rect(self.rect)
+        return self.renderer
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.renderer.pop_clip_rect()
+
+class Renderer:
+    def __init__(self, ref: SdlRef, *args):
         if len(args) > 0:
             raise ValueError("Renderer.__init__ should not be called: Use Window.build_renderer(self)!")
-        super().__init__(lib.SDL_DestroyRenderer)
-        self._raw = raw
+        self._ref = ref
+        self._raw = ref._raw
         self.clear_color = (0, 0, 0, 255)
         self.clip_rects = []
+    
+    def __enter__(self):
+        return self
     
     def set_clear_color(self, r: int, g: int, b: int, a: int=255):
         """Sets the color that the renderer fills the screen with after calls
@@ -49,6 +65,12 @@ class Renderer(Allocated):
         """Sets the draw color for the renderer, that primitives will be
         drawn with afterwards."""
         assert_zero(lib.SDL_SetRenderDrawColor(self._raw, r, g, b, a))
+    
+    def with_offset(self, dx: int, dy: int) -> Any:
+        if dx == 0 and dy == 0:
+            return self
+        else:
+            return OffsetRenderer(self)
     
     # TODO: Is this typing correct?
     def set_blend_mode(self, mode: BlendMode):
@@ -70,12 +92,14 @@ class Renderer(Allocated):
         """Loads the image in the given file as a texture"""
         rawpath = bytes(filepath, encoding="utf8")
         raw = assert_nonnull(lib.IMG_LoadTexture(self._raw, rawpath))
-        return Texture(raw)
+        ref = SdlRef(raw, lib.SDL_DestroyTexture)
+        return Texture(ref)
     
     def create_texture_from_surface(self, surface: Surface) -> Texture:
         """Creates a Texture from a given Surface."""
         raw = assert_nonnull(lib.SDL_CreateTextureFromSurface(self._raw, surface._raw))
-        return Texture(raw)
+        ref = SdlRef(raw, lib.SDL_DestroyTexture)
+        return Texture(ref)
     
     def copy(self, texture: Texture, src_rect: Optional[Rect]=None, 
             dst_rect: Optional[Rect]=None):
@@ -117,6 +141,10 @@ class Renderer(Allocated):
         """Disables the clip rect for this renderer"""
         assert_zero(lib.SDL_RenderSetClipRect(self._raw, ffi.NULL))
     
+    def clipped(self, rect: Rect) -> ClipContext:
+        """Returns a context in which the rendering is clipped to the given rect"""
+        return ClipContext(self, rect)
+    
     def push_clip_rect(self, rect: Rect):
         """Pushes the given rect as a clip rect for the renderer"""
         self.clip_rects.append(rect)
@@ -134,6 +162,11 @@ class Renderer(Allocated):
             self.set_clip_rect(self.clip_rects[-1])
         return popped
     
+    def color(self, color: Color) -> Any:
+        """Sets the draw color of the renderer and returns it."""
+        self.set_draw_color(*color)
+        return self
+    
     def fill_rect(self, rect: Rect):
         """Fills a rectangular area with the current draw color"""
         assert_zero(lib.SDL_RenderFillRect(self._raw, rect._raw))
@@ -150,29 +183,42 @@ class Renderer(Allocated):
         """Fills the pixel at (x, y) with the current draw color"""
         assert_zero(lib.SDL_RenderDrawPoint(self._raw, x, y))
     
-    def c_fill_rect(self, color: Color, rect: Rect):
-        """Fills a rectangular area with the given color"""
-        self.set_draw_color(*color)
-        self.fill_rect(rect)
-    
-    def c_draw_rect(self, color: Color, rect: Rect):
-        """Draws the outline of a rectangular area with the given color"""
-        self.set_draw_color(*color)
-        self.draw_rect(rect)
-    
-    def c_draw_line(self, color: Color, x1: int, y1: int, x2: int, y2: int):
-        """Draws a line from (x1, y1) to (x2, y2) using the given color"""
-        self.set_draw_color(*color)
-        self.draw_line(x1, y1, x2, y2)
-    
-    def c_draw_point(self, color: Color, x: int, y: int):
-        """Fills the pixel at (x, y) with the given color"""
-        self.set_draw_color(*color)
-        self.draw_point(x, y)
-    
     def present(self):
         """Sends the current frame to the GPU for drawing"""
         lib.SDL_RenderPresent(self._raw)
+
+class OffsetContext:
+    def __init__(self, offset_renderer, x_offset: int, y_offset: int):
+        self.offset_renderer = offset_renderer
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+    
+    def __enter__(self):
+        self.offset_renderer.x_offset += self.x_offset
+        self.offset_renderer.y_offset += self.y_offset
+        return self.offset_renderer
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.offset_renderer.x_offset -= self.x_offset
+        self.offset_renderer.y_offset -= self.y_offset
+
+# TODO: Finish implementing
+class OffsetRenderer(Renderer):
+    """A renderer that has been offset by a small amount"""
+    def __init__(self, original, x_offset, y_offset, *args):
+        super().__init__(renderer._ref, *args)
+        self._original = original
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+    
+    def with_offset(self, dx: int, dy: int) -> OffsetContext:
+        if dx == 0 or dy == 0:
+            return self
+        else:
+            return OffsetContext(self, dx, dy)
+    
+    def __enter__(self):
+        return self
 
 class RendererBuilder:
     """A builder for renderers."""
@@ -184,7 +230,8 @@ class RendererBuilder:
     def finish(self) -> Renderer:
         """Builds the renderer and returns it"""
         raw = assert_nonnull(lib.SDL_CreateRenderer(self._window._raw, self._index, self._flags))
-        return Renderer(raw)
+        ref = SdlRef(raw, lib.SDL_DestroyRenderer)
+        return Renderer(ref)
     
     def build(self) -> Renderer:
         print("Warning: RendererBuilder.build is deprecated, use .finish!")

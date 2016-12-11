@@ -1,14 +1,14 @@
 from ._sdl2 import ffi, lib
 from .render import RendererBuilder
-from .common import Allocated, assert_nonnull
+from .common import SdlRef, assert_nonnull
 from typing import Any
 
-class Window(Allocated):
-    def __init__(self, raw: Any, *args) -> None:
+class Window:
+    def __init__(self, ref: SdlRef, *args) -> None:
         if len(args) > 0:
             raise ValueError("Window.__init__ should not be called: Use Window.build()!")
-        super().__init__(lib.SDL_DestroyWindow)
-        self._raw = raw
+        self._ref = ref
+        self._raw = ref._raw
     
     # TODO: Tell mypy this is static
     def build() -> 'WindowBuilder': # TODO: How to forward declare?
@@ -67,7 +67,8 @@ class WindowBuilder():
             bytes(self._title, encoding="utf8"), self._x, 
             self._y, self._width, self._height, self._flags
         ))
-        return Window(raw)
+        ref = SdlRef(raw, lib.SDL_DestroyWindow)
+        return Window(ref)
     
     def build(self) -> Window:
         print("Warning: WindowBuilder.build is deprecated, use .finish!")
